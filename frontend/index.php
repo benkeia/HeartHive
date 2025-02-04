@@ -11,6 +11,8 @@
 <body>
     <h1>HeartHive</h1>
 
+    <?php include '../backend/db.php'; ?>
+
 
     <script src="js/script.js"></script>
 </body>
