@@ -11,7 +11,13 @@
 <body>
     <h1>HeartHive</h1>
 
-    <?php include '../backend/db.php'; ?>
+    <?php include '../backend/db.php';
+
+    $result = $conn->query("SELECT COUNT(*) AS count FROM user");
+    $row = $result->fetch_assoc();
+    echo "<p>Nombre de choses dans la table user: " . $row['count'] . "</p>";
+
+    ?>
 
 
     <script src="js/script.js"></script>
