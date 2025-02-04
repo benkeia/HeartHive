@@ -11,6 +11,8 @@
 <body>
     <h1>HeartHive</h1>
 
+
+    <script src="js/script.js"></script>
 </body>
 
 </html>
