@@ -2,8 +2,12 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Roboto', sans-serif;
-    
+}
 
+h1{
+    text-align: center;
+    margin-top: 20px;
+    font-size: 2.5rem;
 }
 
 form {
@@ -13,6 +17,8 @@ form {
     padding: 50px;
     display: flex;
     flex-direction: column;
+
+    border-radius: 20px;
   
 
 }
@@ -38,16 +44,13 @@ form .header{
 }
 
 .number{
-
     display: flex;
     justify-content: center;
     align-items: center;
-
     width: 35px;
     height: 35px;
     font-size: 1.5rem;
     background-color: lightgray;
-  
     border-radius: 50%;
 }
 
@@ -59,5 +62,71 @@ form .header{
    
   
 }
+
+.signup-footer{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.signup-footer button{
+    width: 48%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-top: 10px;
+}
+
+.signup-footer button:hover{
+    background-color: #45a049;
+}
+
+.signup-footer button:active{
+    background-color: #3e8e41;
+}
+
+.signup-footer button:focus{
+    outline: none;
+}
+
+.signup-footer button:disabled{
+    background-color: lightgray;
+    color: gray;
+    cursor: not-allowed;
+}
+
+label{
+    font-size: 1.2rem;
+    margin-top: 10px;
+}
+
+input{
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid lightgray;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.steps{
+    display: flex;
+
+    width: 300%;
+}
+
+.step{
+    width: 98vw;
+max-width: 400px;
+padding: 5px 15px 15px;
+
+
+}
+
+
 
 

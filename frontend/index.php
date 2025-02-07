@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HeartHive</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/dropzone@6.0.0-beta.2/dist/dropzone-min.js"></script>
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 </head>
 
 <body>
@@ -20,7 +23,8 @@
     ?>
 
 
-    <script src="js/script.js"></script>
+    <script type="module" src="../node_modules/dropzone/dist/dropzone-min.js"></script>
+    <script type="module" src="js/script.js"></script>
 </body>
 
 </html>
