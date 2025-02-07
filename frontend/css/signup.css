@@ -1,7 +1,10 @@
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Raleway:ital,wght@0,100..900;1,100..900&family=Unbounded:wght@200..900&display=swap');
+
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Roboto', sans-serif;
+    font-family: 'DM Sans', sans-serif;
 }
 
 h1{
@@ -17,6 +20,7 @@ form {
     padding: 50px;
     display: flex;
     flex-direction: column;
+    
 
     border-radius: 20px;
   
@@ -47,8 +51,8 @@ form .header{
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     font-size: 1.5rem;
     background-color: lightgray;
     border-radius: 50%;
@@ -59,6 +63,7 @@ form .header{
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    height: 100vh;
    
   
 }
@@ -71,7 +76,7 @@ form .header{
 .signup-footer button{
     width: 48%;
     padding: 10px;
-    background-color: #4CAF50;
+    background-color: #F6A453;
     color: white;
     border: none;
     border-radius: 5px;
@@ -80,13 +85,8 @@ form .header{
     margin-top: 10px;
 }
 
-.signup-footer button:hover{
-    background-color: #45a049;
-}
 
-.signup-footer button:active{
-    background-color: #3e8e41;
-}
+
 
 .signup-footer button:focus{
     outline: none;
@@ -125,6 +125,12 @@ max-width: 400px;
 padding: 5px 15px 15px;
 
 
+}
+
+
+.active{
+    background-color: #F6A453;
+    color: #f9f9f9;
 }
 
 

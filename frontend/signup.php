@@ -46,7 +46,7 @@
             </div>
 
             <div class="pagination">
-                <div class="number">1</div>
+                <div class="number active">1</div>
                 <div class="bar"></div>
                 <div class="number">2</div>
                 <div class="bar"></div>
@@ -114,88 +114,7 @@
         </form>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const map = L.map("map").setView([46.603354, 1.888334], 6);
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                attribution: "© OpenStreetMap contributors",
-                maxZoom: 18,
-                zoomControl: false,
-                scrollWheelZoom: false
-
-
-
-            }).addTo(map);
-
-            const citySearch = document.getElementById("city-search");
-            const suggestions = document.getElementById("suggestions");
-            const validationIcon = document.getElementById("validation-icon");
-
-            let cityNames = [];
-
-            citySearch.addEventListener("input", () => {
-                const searchTerm = citySearch.value.trim();
-                if (searchTerm.length > 2) {
-                    fetch(`https://geo.api.gouv.fr/communes?nom=${searchTerm}&fields=nom,centre&boost=population&limit=5`)
-                        .then(response => response.json())
-                        .then(data => {
-                            cityNames = data.map(commune => commune.nom);
-                            displaySuggestions(data);
-                            validateCity();
-                        })
-                        .catch(error => {
-                            console.error("Erreur lors de la récupération des données:", error);
-                        });
-                } else {
-                    suggestions.innerHTML = "";
-                    validationIcon.innerHTML = "";
-                }
-            });
-
-            let marker;
-
-            function displaySuggestions(communes) {
-                suggestions.innerHTML = "";
-                communes.forEach(commune => {
-                    const item = document.createElement("div");
-                    item.className = "suggestion";
-                    item.textContent = commune.nom;
-                    item.addEventListener("click", () => {
-                        citySearch.value = commune.nom;
-                        validationIcon.innerHTML = "✅";
-                        validationIcon.style.color = "green";
-                        suggestions.innerHTML = "";
-                        const {
-                            coordinates
-                        } = commune.centre;
-                        if (marker) {
-                            marker.setLatLng([coordinates[1], coordinates[0]]);
-                        } else {
-                            marker = L.marker([coordinates[1], coordinates[0]]).addTo(map);
-                        }
-                        map.setView(marker.getLatLng(), 12, {
-                            animate: true
-                        });
-                        marker.bindPopup(commune.nom).openPopup();
-                    });
-                    suggestions.appendChild(item);
-                });
-            }
-
-            function validateCity() {
-                const inputCity = citySearch.value.trim();
-                if (cityNames.includes(inputCity)) {
-                    validationIcon.innerHTML = "✅";
-                    validationIcon.style.color = "green";
-                } else {
-                    validationIcon.innerHTML = "❌";
-                    validationIcon.style.color = "red";
-                }
-            }
-
-            citySearch.addEventListener("blur", validateCity);
-        });
-    </script>
+    <script src="js/leaflet-signup.js"></script>
 </body>
 
 </html>
