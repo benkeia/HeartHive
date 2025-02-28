@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : ven. 28 fév. 2025 à 08:54
+-- Généré le : ven. 28 fév. 2025 à 09:21
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -61,13 +61,20 @@ CREATE TABLE `user` (
   `user_name` varchar(255) NOT NULL,
   `user_firstname` varchar(255) NOT NULL,
   `user_date` date NOT NULL,
-  `user_adress` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`user_adress`)),
+  `user_adress` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `user_mail` varchar(255) NOT NULL,
   `user_password` varchar(255) NOT NULL,
   `user_type` smallint(5) UNSIGNED NOT NULL,
-  `user_tags` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`user_tags`)),
-  `user_disponibility` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`user_disponibility`))
+  `user_tags` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `user_disponibility` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `user`
+--
+
+INSERT INTO `user` (`user_id`, `user_name`, `user_firstname`, `user_date`, `user_adress`, `user_mail`, `user_password`, `user_type`, `user_tags`, `user_disponibility`) VALUES
+(1, 'Cochard', 'Damien', '2025-02-28', NULL, 'cochard.damien@gmail.com', '99e6b749acbfbe2a596df99e91d24d6e1fdbee00', 0, NULL, NULL);
 
 --
 -- Index pour les tables déchargées
@@ -113,7 +120,7 @@ ALTER TABLE `postulation`
 -- AUTO_INCREMENT pour la table `user`
 --
 ALTER TABLE `user`
-  MODIFY `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Contraintes pour les tables déchargées
