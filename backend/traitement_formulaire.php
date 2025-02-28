@@ -32,7 +32,7 @@ try {
                 mkdir($upload_dir, 0777, true);
             }
             // Générer un nom de fichier unique
-            $unique_name = time() . '_' . basename($_FILES['profile-pic']['name']);
+            $unique_name = time();
             $profile_picture = $upload_dir . $unique_name;
             move_uploaded_file($_FILES['profile-pic']['tmp_name'], $profile_picture);
 
