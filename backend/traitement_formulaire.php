@@ -41,7 +41,7 @@ try {
         }
 
         // Préparer et exécuter la requête d'insertion
-        $sql = "INSERT INTO user (user_name, user_surname, user_city, user_range, user_mail, user_password, user_birth_date, user_profile_picture) 
+        $sql = "INSERT INTO user (user_name, user_firstname, user_adress, user_type, user_mail, user_password, user_date, user_profile_picture) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('sssissss', $name, $surname, $city, $range, $mail, $password, $birth, $profile_picture);
