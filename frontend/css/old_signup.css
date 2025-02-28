@@ -1,0 +1,141 @@
+
+/* Ce CSS est inutilisé mais je le garde pour pouvoir refaire le CSS de l'inscription officielle.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Raleway:ital,wght@0,100..900;1,100..900&family=Unbounded:wght@200..900&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'DM Sans', sans-serif;
+}
+
+h1{
+    text-align: center;
+    margin-top: 20px;
+    font-size: 2.5rem;
+}
+
+form {
+    width: 98%;
+    max-width: 400px;
+    background-color: #f9f9f9;
+    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    
+
+    border-radius: 20px;
+  
+
+}
+
+form .header{
+    text-align: center;
+}
+
+
+
+.pagination{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    
+}
+
+.bar{
+    height: 3px;
+    width: 20%;
+    background-color: lightgray;
+    border-radius: 5px;
+}
+
+.number{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+    background-color: lightgray;
+    border-radius: 50%;
+}
+
+.signup-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+   
+  
+}
+
+.signup-footer{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.signup-footer button{
+    width: 48%;
+    padding: 10px;
+    background-color: #FB8E00;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-top: 10px;
+}
+
+
+
+
+.signup-footer button:focus{
+    outline: none;
+}
+
+.signup-footer button:disabled{
+    background-color: lightgray;
+    color: gray;
+    cursor: not-allowed;
+}
+
+label{
+    font-size: 1.2rem;
+    margin-top: 10px;
+}
+
+input{
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid lightgray;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.steps{
+    display: flex;
+
+    width: 300%;
+}
+
+.step{
+    width: 98vw;
+max-width: 400px;
+padding: 5px 15px 15px;
+
+
+}
+
+
+.active{
+    background-color: #F6A453;
+    color: #f9f9f9;
+}
+
+
+
+
