@@ -118,7 +118,7 @@
 
                 <div class="profile_center">
                     <div class="profile-pic-container" onclick="document.getElementById('profile-pic').click();">
-                        <img id="profile-pic-preview" src="assets/img/profile_picture/default.webp" alt="Photo de profil">
+                        <img id="profile-pic-preview" src="assets/uploads/profile_pictures/default.webp" alt="Photo de profil">
                         <span class="upload-text">Cliquez pour ajouter une photo</span>
                     </div>
                 </div>

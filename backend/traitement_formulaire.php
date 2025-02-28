@@ -1,17 +1,8 @@
 <?php
+
+include 'db.php';
+
 try {
-    // Connexion à la base de données
-    $dsn = 'mysql:host=localhost;dbname=db_HeartHive;charset=utf8';
-    $username = 'root';
-    $password = 'root';
-    $options = [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    ];
-
-    $pdo = new PDO($dsn, $username, $password, $options);
-
     // Récupérer les données du formulaire
     $surname = $_POST['surname'];
     $name = $_POST['name'];
@@ -23,10 +14,13 @@ try {
     $profile_picture = ''; // Vous pouvez ajouter une logique pour gérer l'upload de l'image de profil
 
     // Vérifier si l'adresse e-mail existe déjà
-    $sql = "SELECT COUNT(*) FROM user WHERE user_mail = :mail";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([':mail' => $mail]);
-    $emailExists = $stmt->fetchColumn();
+    $sql = "SELECT COUNT(*) FROM user WHERE user_mail = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('s', $mail);
+    $stmt->execute();
+    $stmt->bind_result($emailExists);
+    $stmt->fetch();
+    $stmt->close();
 
     if ($emailExists) {
         echo "Erreur: L'adresse e-mail est déjà utilisée.";
@@ -37,30 +31,25 @@ try {
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0777, true);
             }
-            $profile_picture = $upload_dir . basename($_FILES['profile-pic']['name']);
+            // Générer un nom de fichier unique
+            $unique_name = time() . '_' . basename($_FILES['profile-pic']['name']);
+            $profile_picture = $upload_dir . $unique_name;
             move_uploaded_file($_FILES['profile-pic']['tmp_name'], $profile_picture);
 
             // Enregistrer le chemin relatif dans la base de données
-            $profile_picture = 'assets/uploads/profile_pictures/' . basename($_FILES['profile-pic']['name']);
+            $profile_picture = 'assets/uploads/profile_pictures/' . $unique_name;
         }
 
         // Préparer et exécuter la requête d'insertion
         $sql = "INSERT INTO user (user_name, user_surname, user_city, user_range, user_mail, user_password, user_birth_date, user_profile_picture) 
-                VALUES (:name, :surname, :city, :range, :mail, :password, :birth, :profile_picture)";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':name' => $name,
-            ':surname' => $surname,
-            ':city' => $city,
-            ':range' => $range,
-            ':mail' => $mail,
-            ':password' => $password,
-            ':birth' => $birth,
-            ':profile_picture' => $profile_picture,
-        ]);
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('sssissss', $name, $surname, $city, $range, $mail, $password, $birth, $profile_picture);
+        $stmt->execute();
+        $stmt->close();
 
         echo "Nouvel enregistrement créé avec succès";
     }
-} catch (PDOException $e) {
+} catch (Exception $e) {
     echo "Erreur: " . $e->getMessage();
 }
