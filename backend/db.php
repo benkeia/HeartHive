@@ -2,7 +2,7 @@
 $host = 'localhost';
 $user = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'root' : 'root';
 $password = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'root';
-$database = 'db_HeartHive';
+$database = 'bddsae401';
 
 $conn = new mysqli($host, $user, $password, $database);
 
