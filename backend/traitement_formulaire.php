@@ -1,6 +1,7 @@
 <?php
 
 include 'db.php';
+session_start();
 
 try {
     // Récupérer et nettoyer les données du formulaire
@@ -13,12 +14,9 @@ try {
     $range = htmlspecialchars($cityData['range']);
     $mail = trim(htmlspecialchars($_POST['email']));
     $password = $_POST['password'];
-    $profile_picture = ''; // Vous pouvez ajouter une logique pour gérer l'upload de l'image de profil
+    $profile_picture = 'assets/uploads/profile_pictures/default.webp'; // Chemin par défaut pour la photo de profil
 
-    // Valider les données du formulaire
-    if (empty($surname) || empty($name) || empty($birth) || empty($city) || empty($coordinates) || empty($range) || empty($mail) || empty($password)) {
-        throw new Exception("Tous les champs sont obligatoires.");
-    }
+
 
     if (!filter_var($mail, FILTER_VALIDATE_EMAIL)) {
         throw new Exception("Adresse e-mail invalide.");
@@ -69,7 +67,11 @@ try {
         $stmt->execute();
         $stmt->close();
 
-        echo "Nouvel enregistrement créé avec succès";
+        // Démarrer une session et rediriger vers index.php
+        $_SESSION['user_mail'] = $mail;
+
+        header("Location: ../frontend/index.php");
+        exit();
     }
 } catch (Exception $e) {
     echo "Erreur: " . $e->getMessage();
