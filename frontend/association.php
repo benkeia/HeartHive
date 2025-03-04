@@ -29,10 +29,12 @@
     // Récupération des résultats
     $result = $associationStatement->get_result();
     while ($association = $result->fetch_assoc()) {
-        $associationProfilePicture = htmlspecialchars($association['association']);
+        $associationProfilePicture = htmlspecialchars($association['association_profile_picture']);
+        $associationBackgroundImage = htmlspecialchars($association['association_background_image']);
         $associationName = htmlspecialchars($association['association_name']);
         $associationAdress = htmlspecialchars($association['association_adress']);
-        $associationBio = htmlspecialchars($association['association_bio']);
+        $associationDesc = htmlspecialchars($association['association_desc']);
+        $associationMission = htmlspecialchars($association['association_mission']);
     }
 
     // Fermer la requête
@@ -42,17 +44,17 @@
     <div class="mainAssociationContainer flex flex-col">
         <div class="topAssociationContainer flex">
             <div class="leftAssociationContainer">
-                <img src="" alt="">
+                <img src="<?php echo $associationBackgroundImage?>" alt="">
                 <div class="associationTitle flex gap-x-10">
-                    <img src="" alt="">
-                    <h1>Nom de l'assoc</h1>
+                    <img src="<?php echo $associationProfilePicture?>" alt="">
+                    <h1><?php echo $associationName?></h1>
                 </div>
-                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Asperiores, consequatur.</p>
+                <p><?php echo $associationDesc?></p>
             </div>
             <div class="rightAssocaitionContainer">
                 <h2>NOM DE LA MISSION</h2>
                 <div class="associationInformationContainer flex flex-col gap-y-5">
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus in labore reprehenderit nam odit consequuntur quasi similique recusandae, quod libero!</p>
+                    <p><?php echo $associationMission?></p>
                 </div>
                 <hr>
                 <div class="associationLocation flex gap-x-5">
