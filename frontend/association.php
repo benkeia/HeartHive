@@ -60,7 +60,7 @@
                 <div class="associationLocation flex gap-x-5">
                     <div class="imageLocationContainer flex flex-col rounded-2xl shadow-lg">
                         <img src="" alt="">
-                        <p>Lorem ipsum dolor sit amet.</p>
+                        <p><?php echo $associationAdress?></p>
                     </div>
                     <div class="buttonPostulateContainer">
                         <button>Postuler</button>
