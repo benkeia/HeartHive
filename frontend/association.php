@@ -64,9 +64,12 @@
                         <p><?php echo $associationAdress?></p>
                     </div>
                     <div class="buttonPostulateContainer">
-                        <form action="postulate.php" method="POST">
-                            <button id="postulerBtn" class="py-2 px-5 bg-blue-100 rounded-3xl cursor-pointer hover:bg-blue-200 ">Postuler</button>
-                        </form>
+                    <form id="postulationForm">
+    <input type="hidden" name="association_id" value="<?php echo $associationId; ?>">
+    <button type="submit" id="postulerBtn" class="py-2 px-5 bg-blue-100 rounded-3xl cursor-pointer hover:bg-blue-200">
+        Postuler
+    </button>
+</form>
                         <p class="text-sm text-slate-400">En vous inscrivant à cette association, vous acceptez de respecter les conditions suivantes : participer activement aux missions, respecter les autres membres et suivre les directives de l'association. Merci pour votre engagement.</p>
                     </div>
                 </div>
@@ -79,44 +82,72 @@
             </div>
         </div>
     </div>
- <!-- Pop-up (initialement cachée) -->
- <div id="popup" class="fixed inset-0 flex items-center justify-center bg-black/50 bg-opacity-50 hidden">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-            <div id="loading" class="flex items-center justify-center">
-                <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                </svg>
-                <span class="ml-2">Inscription en cours...</span>
-            </div>
-            <div id="confirmation" class="hidden">
-                <p class="text-green-600 font-bold">Inscription confirmée ✅</p>
-            </div>
+ <!-- Pop-up -->
+<div id="popup" class="fixed inset-0 flex items-center justify-center bg-black/50 bg-opacity-50 hidden">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+        <div id="loading" class="flex items-center justify-center">
+            <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <span class="ml-2">Inscription en cours...</span>
+        </div>
+        <div id="confirmation" class="hidden">
+            <p id="confirmationMessage" class="font-bold"></p>
         </div>
     </div>
-    <script>
-        document.getElementById('postulerBtn').addEventListener('click', function() {
-            const popup = document.getElementById('popup');
-            const loading = document.getElementById('loading');
-            const confirmation = document.getElementById('confirmation');
+</div>
+<script>
+    document.getElementById('postulationForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Empêche le rechargement de la page
 
-            // Affiche la pop-up
-            popup.classList.remove('hidden');
-            loading.classList.remove('hidden');
-            confirmation.classList.add('hidden');
+        const popup = document.getElementById('popup');
+        const loading = document.getElementById('loading');
+        const confirmation = document.getElementById('confirmation');
+        const confirmationMessage = document.getElementById('confirmationMessage');
+        const formData = new FormData(this);
 
-            // Simule un temps de chargement (ex: 2 secondes)
+        // Affiche la pop-up avec le chargement
+        popup.classList.remove('hidden');
+        loading.classList.remove('hidden');
+        confirmation.classList.add('hidden');
+
+        fetch('postulate.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json()) // Convertit en JSON
+        .then(data => {
+            loading.classList.add('hidden');
+            confirmation.classList.remove('hidden');
+
+            // Affiche le message de retour du serveur
+            confirmationMessage.textContent = data.message;
+            confirmationMessage.classList.remove("text-green-600", "text-red-600");
+            
+            if (data.status === "success") {
+                confirmationMessage.classList.add("text-green-600");
+            } else {
+                confirmationMessage.classList.add("text-red-600");
+            }
+
+            // Ferme la pop-up après 3 secondes
             setTimeout(() => {
-                loading.classList.add('hidden');
-                confirmation.classList.remove('hidden');
+                popup.classList.add('hidden');
+            }, 3000);
+        })
+        .catch(error => {
+            loading.classList.add('hidden');
+            confirmation.classList.remove('hidden');
+            confirmationMessage.textContent = "Erreur réseau. Réessayez.";
+            confirmationMessage.classList.add("text-red-600");
 
-                // Ferme la pop-up après 3 secondes
-                setTimeout(() => {
-                    popup.classList.add('hidden');
-                }, 3000);
-            }, 2000);
+            setTimeout(() => {
+                popup.classList.add('hidden');
+            }, 3000);
         });
-    </script>
+    });
+</script>
 </body>
 
 </html>
