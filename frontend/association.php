@@ -17,6 +17,7 @@
 <body>
     <?php
     include '../backend/db.php';
+    include 'include/header.php';
 
     // Requête préparée
     $associationStatement = $conn->prepare("SELECT * FROM association WHERE association_id = ?");
@@ -43,16 +44,16 @@
 
     <div class="mainAssociationContainer flex flex-col">
         <div class="topAssociationContainer flex">
-            <div class="leftAssociationContainer">
-                <img src="<?php echo $associationBackgroundImage?>" alt="">
-                <div class="associationTitle flex gap-x-10">
-                    <img src="<?php echo $associationProfilePicture?>" alt="">
-                    <h1><?php echo $associationName?></h1>
+            <div class="leftAssociationContainer p-10">
+                <img class="rounded-3xl" src="<?php echo $associationBackgroundImage?>" alt="">
+                <div class="associationTitle flex gap-x-10 items-center py-10">
+                    <img class="w-[75px] rounded-full"src="<?php echo $associationProfilePicture?>" alt="">
+                    <h1 class="text-xl"><?php echo $associationName?></h1>
                 </div>
                 <p><?php echo $associationDesc?></p>
             </div>
-            <div class="rightAssocaitionContainer">
-                <h2>NOM DE LA MISSION</h2>
+            <div class="rightAssocaitionContainer p-10 flex flex-col gap-y-5">
+                <h2 class="text-5xl">NOM DE LA MISSION</h2>
                 <div class="associationInformationContainer flex flex-col gap-y-5">
                     <p><?php echo $associationMission?></p>
                 </div>
@@ -63,8 +64,8 @@
                         <p><?php echo $associationAdress?></p>
                     </div>
                     <div class="buttonPostulateContainer">
-                        <button>Postuler</button>
-                        <p class="text-sm text-slate-400">Lorem ipsum dolor sit amet consectetur adipisicing elit. Aut magnam sed praesentium unde facere adipisci, doloribus nemo! Esse, quaerat quas et voluptates nulla in, enim omnis nihil inventore, exercitationem quos.</p>
+                        <button class="py-2 px-5 bg-blue-100 rounded-3xl cursor-pointer hover:bg-blue-200 ">Postuler</button>
+                        <p class="text-sm text-slate-400">En vous inscrivant à cette association, vous acceptez de respecter les conditions suivantes : participer activement aux missions, respecter les autres membres et suivre les directives de l'association. Merci pour votre engagement.</p>
                     </div>
                 </div>
                 <hr>
