@@ -43,7 +43,7 @@
     ?>
 
     <div class="mainAssociationContainer flex flex-col">
-        <div class="topAssociationContainer flex">
+        <div class="topAssociationContainerBB flex">
             <div class="leftAssociationContainer p-10">
                 <img class="rounded-3xl" src="<?php echo $associationBackgroundImage?>" alt="">
                 <div class="associationTitle flex gap-x-10 items-center py-10">
@@ -94,6 +94,7 @@
         </div>
         <div id="confirmation" class="hidden">
             <p id="confirmationMessage" class="font-bold"></p>
+            <button id="closePop" class="py-2 px-5 bg-blue-100 rounded-3xl cursor-pointer hover:bg-blue-200 my-2">Fermer</button>
         </div>
     </div>
 </div>
@@ -106,11 +107,16 @@
         const confirmation = document.getElementById('confirmation');
         const confirmationMessage = document.getElementById('confirmationMessage');
         const formData = new FormData(this);
+        const closePop = document.getElementById('closePop');
 
         // Affiche la pop-up avec le chargement
         popup.classList.remove('hidden');
         loading.classList.remove('hidden');
         confirmation.classList.add('hidden');
+
+        closePop.addEventListener('click', () => {
+                    popup.classList.add('hidden');
+                });
 
         fetch('postulate.php', {
             method: 'POST',
@@ -129,6 +135,8 @@
                 confirmationMessage.classList.add("text-green-600");
             } else {
                 confirmationMessage.classList.add("text-red-600");
+                
+
             }
 
             // Ferme la pop-up après 3 secondes
