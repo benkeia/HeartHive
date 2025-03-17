@@ -12,7 +12,7 @@ $mail = $_POST['mail'];
 $password = $_POST['password'];
 
 // Préparation de la requête
-$sql = $conn->prepare("SELECT user_password, user_type, user_firstname, user_name, user_id, user_profile_picture FROM user WHERE user_mail = ?");
+$sql = $conn->prepare("SELECT user_password,user_mail, user_type, user_firstname, user_name, user_id, user_profile_picture FROM user WHERE user_mail = ?");
 $sql->bind_param("s", $mail);
 $sql->execute();
 $result = $sql->get_result(); // Récupération des résultats
@@ -27,13 +27,14 @@ if ($result->num_rows > 0) {
         $_SESSION['name'] = $row['user_name'];
         $_SESSION['user_id'] = $row['user_id'];
         $_SESSION['type'] = $row['user_type'];
+        $_SESSION['mail'] = $row['user_mail'];
         $_SESSION['authentification'] = true;
         $_SESSION['user_profile_picture'] = $row['user_profile_picture'];
 
         // Redirection en fonction du type d'utilisateur
         switch ($row['user_type']) {
             case 0:
-                header('Location: association.php');
+                header('Location: index.php');
                 exit();
             default:
                 header('Location: defaultpage.php');
