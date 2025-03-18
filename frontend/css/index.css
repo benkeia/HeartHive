@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Raleway:ital,wght@0,100..900&display=swap');
+
+:root {
+    --primary-color: rgb(11, 78, 179);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    margin: 0;
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+    font-family: "DM Sans", serif;
+}
+
+aside {
+    width: 300px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+}
+
+aside h2 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+#filters {
+    display: flex;
+    flex-direction: column;
+}
+
+#filters label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #666;
+}
+
+#filters label[for="city"] {
+    margin-bottom: 0;
+}
+
+#filters input,
+#filters select {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+#filters .btn {
+    padding: 0.75rem;
+    display: block;
+    text-decoration: none;
+    background-color: var(--primary-color);
+    color: #f3f3f3;
+    text-align: center;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: 0.3s;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 1rem;
+}
+
+#filters .btn:hover {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--primary-color);
+}
+
+#categories {
+    display: flex;
+    flex-direction: column;
+}
+
+#categories label {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #666;
+}
+
+/* Styles pour le champ range */
+#radius-range {
+    width: 100%;
+    margin: 1rem 0;
+    accent-color: var(--primary-color);
+}
+
+#nb-km {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+/* Style pour le conteneur des suggestions */
+#suggestions {
+    position: absolute;
+    width: calc(100% - 2px); /* Ajustement pour la bordure */
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none; /* Caché par défaut */
+    margin-top: -20px;
+}
+
+/* Style pour les éléments de suggestion */
+.suggestion-item {
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #333;
+}
+
+.suggestion-item:hover {
+    background-color: #f5f5f5;
+}
+
+.suggestion-item:not(:last-child) {
+    border-bottom: 1px solid #eee;
+}
+
+#suggestions {
+    position: relative;
+    width: calc(100% - 2px);
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: opacity 0.2s, transform 0.2s;
+    margin-top: -1px;
+}
+
+#suggestions.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.suggestion {
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #333;
+    font-size: 0.9em;
+    border-bottom: 1px solid #eee;
+}
+
+.suggestion:hover {
+    background-color: #f5f5f5;
+}
+
+#suggestions.show {
+    display: block;
+}
+
+.suggestion:last-child {
+    border-bottom: none;
+}
+
+/* Validation visuelle */
+#validation-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 0.9em;
+}

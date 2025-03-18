@@ -28,11 +28,12 @@ if ($result->num_rows > 0) {
         $_SESSION['user_id'] = $row['user_id'];
         $_SESSION['type'] = $row['user_type'];
         $_SESSION['authentification'] = true;
+        $_SESSION['user_profile_picture'] = $row['user_profile_picture'];
 
         // Redirection en fonction du type d'utilisateur
         switch ($row['user_type']) {
             case 0:
-                header('Location: association.php');
+                header('Location: index.php');
                 exit();
             default:
                 header('Location: defaultpage.php');
@@ -49,5 +50,3 @@ if ($result->num_rows > 0) {
 
 $sql->close();
 $conn->close();
-
-?>
