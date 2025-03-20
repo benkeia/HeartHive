@@ -1,0 +1,70 @@
+/* CSS du Header */
+
+
+html body{
+    margin:0;
+    padding:0;
+    font-family: "SF Pro Display", sans-serif;
+    background-color: #f5f5f7;
+}
+
+
+/* Header */   
+.header{
+    width: 100%;
+    height: 100px;
+    position: fixed;
+    top: 0px;
+    right:0;
+    margin-top: 0;
+    background-color: #FFB3E4;
+    display: inline-block;
+}
+.contentHeader{
+    padding-top: 20px;
+    padding-right: 20px;
+}
+.logo{
+    max-width: 80px;
+    max-height: 80px;
+    width: auto;
+}
+#searchBar {
+    width: 120%;
+    max-width: 300px;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #FFB3E4;
+    border-radius: 8px;
+    outline: none;
+    float: right;
+    margin-right: 50px;
+}
+.header button{
+    float: right;
+    border-style: none;
+    background-color: transparent;
+    margin-right: 50px;
+}
+
+.header button:hover{
+    transform: scale(1.1);
+}
+
+.header button img{
+    max-width: 50px;
+    max-height: 50px;
+    margin-left: 30px;
+}
+.header a img{
+    max-width: 50px;
+    max-height: 50px;
+    width: auto;
+    float: right;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ccc;
+}
+.header a img:hover{
+    transform: scale(1.1);
+}

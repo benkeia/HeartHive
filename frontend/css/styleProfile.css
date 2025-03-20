@@ -1,0 +1,322 @@
+
+/* CSS du Profile*/
+
+
+html body{
+    margin:0;
+    padding:0;
+    font-family: "SF Pro Display", sans-serif;
+    background-color: #f5f5f7;
+}
+
+
+
+
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.monCompte{
+    border-radius: 10px;
+    box-shadow: 3px 3px 3px 3px lightgray;
+    margin-top: 110px;
+    padding: 10px;
+}
+
+.monCompte h3{
+    padding-left: 10px;
+}
+
+.monCompte li{
+    list-style-type: none;
+}
+
+.monCompte hr{
+    margin-top: 0;
+    margin-bottom: 20px;
+    transform: translateX(-5px);
+}
+
+.monProfil{
+    margin-top: 110px;
+    border-radius: 10px;
+    box-shadow: 3px 3px 3px 3px lightgray;
+    padding: 30px;
+}
+
+.monProfil img{
+    max-height: 100px;
+    max-width: 100px;
+    object-fit: cover;
+    width: auto;
+    float: left;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ccc;
+    margin-right: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Conteneur des centres d’intérêts */
+#interestsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Boutons des centres d’intérêts */
+.interest-btn {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    color: #333;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.interest-btn:hover {
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
+}
+
+/* Bouton "+" */
+#addInterestBtn {
+    background: linear-gradient(135deg, #e487c3, #fd49be);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    z-index: 10;
+}
+
+#addInterestBtn:hover {
+    background: linear-gradient(135deg, #fd49be, #e487c3);
+    transform: scale(1.1);
+}
+
+/* Menu des centres d’intérêts */
+#interestMenu {
+    position: absolute;
+    background: white;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 220px;
+    top: 50%; /* Juste en dessous du bouton */
+    left: 50%;
+    transform: translateX(-50%); /* Centre le menu */
+    display: none;
+    z-index: 1000;
+}
+
+.interets {
+    position: relative;
+}
+
+#interestMenu ul {
+    list-style: none;
+    padding: 0;
+}
+
+#interestMenu li {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 14px;
+}
+
+/* Custom checkbox */
+input[type="checkbox"] {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e487c3;
+    border-radius: 4px;
+    display: inline-block;
+    margin-right: 10px;
+    cursor: pointer;
+    position: relative;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #e487c3;
+    border: none;
+    position: relative;
+}
+
+input[type="checkbox"]:checked::after {
+    content: "✔";
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    left: 2px;
+    top: -2px;
+}
+
+/* Masquer le menu par défaut */
+.hidden {
+    display: none;
+}
+
+
+
+
+
+
+
+
+
+
+/* Positionnement du menu sous le bouton "+" */
+#skillMenu {
+    position: absolute;
+    background: white;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 220px;
+    top: 0;
+    left: 0;
+    transform: translateX(-50%);
+    display: none;
+    z-index: 1000;
+}
+
+#skillMenu ul {
+    list-style: none;
+    padding: 0;
+}
+
+#skillMenu li {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 14px;
+}
+
+/* Pour éviter le décalage si le bouton bouge */
+#addSkillBtn {
+    background: linear-gradient(135deg, #e487c3, #fd49be);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    z-index: 10;
+}
+
+#addSkillBtn:hover {
+    background: linear-gradient(135deg, #fd49be, #e487c3);
+    transform: scale(1.1);
+}
+
+
+
+
+
+
+
+
+/* Styles du calendrier */
+#calendar {
+    background: white;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    max-width: 900px;
+    margin: 20px auto;
+}
+
+
+/* Titre du calendrier */
+.fc-toolbar-title {
+    font-size: 20px !important;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Boutons du calendrier */
+.fc-button {
+    background: linear-gradient(135deg, #e487c3, #fd49be) !important;
+    border: none !important;
+    color: white !important;
+    border-radius: 8px !important;
+    padding: 3px 6px !important;
+}
+
+.fc-button:hover {
+    background: linear-gradient(135deg, #fd49be, #e487c3) !important;
+}
+
+/* Style des événements */
+.fc-event {
+    background-color: #e487c3 !important;
+    border: none !important;
+    color: white !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    padding: 5px !important;
+}
+
+
+#editProfileBtn{
+    background-color: #e487c3;
+    border-color: #e487c3;
+}
+
+#editProfileForm {
+    display: none;
+    margin-top: 10px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
