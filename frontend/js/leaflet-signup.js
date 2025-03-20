@@ -22,9 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const validationIcon = document.getElementById("validation-icon");
     const radiusRange = document.getElementById("radius-range");
     const nbkm = document.getElementById("nb-km");
+    const cityDataInput = document.getElementById("city-data");
 
     // Variables d'état
-    let marker, circle, cityGeoJSON, currentCityCode;
+    let marker, circle, cityGeoJSON, currentCityCode, currentCityName, currentCityCoordinates;
     const radiusValues = [0, 1, 5, 10, 20, 30, 50, 100, 200];
 
     // Gestion de l'autocomplétion
@@ -98,7 +99,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Mise à jour de l'état
         currentCityCode = commune.code;
+        currentCityName = commune.nom;
+        currentCityCoordinates = coordinates;
         updateCircle();
+        updateCityDataInput();
     }
 
     // Mise à jour du cercle/contour
@@ -128,11 +132,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Mise à jour du champ caché avec les données JSON
+    function updateCityDataInput() {
+        const radius = radiusValues[radiusRange.value];
+        const cityData = {
+            name: currentCityName,
+            coordinates: currentCityCoordinates,
+            range: radius
+        };
+        cityDataInput.value = JSON.stringify(cityData);
+    }
+
     // Gestion du range
     radiusRange.addEventListener("input", () => {
         const index = parseInt(radiusRange.value, 10);
         nbkm.textContent = `${radiusValues[index]} km`;
         updateCircle();
+        updateCityDataInput();
     });
 
     // Gestion du redimensionnement de la carte
