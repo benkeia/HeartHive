@@ -94,42 +94,42 @@ if ($result->num_rows > 0) {
 
     <p>Recommandations d'associations proches de vous (Rayon : <?= htmlspecialchars($user_range) ?> km) :</p>
     <div class="main-container flex flex-row ">
-    <div class="container w-1/4">
+    <div class="container w-1/4 flex justify-end">
         <div class="row">
             <div class="col-3">
-                <div class="filtres">
-                    <h2>Filtres</h2>
+                <div class="filtres flex flex-col gap-4 p-5 bg-white rounded-lg shadow-md w-72 mt-28">
+                    <h2 class="mb-2">Filtres</h2>
         
                     <label for="city">Ville</label>
-                    <input type="text" id="city" placeholder="Rechercher une ville...">
+                    <input type="text" id="city" placeholder="Rechercher une ville..." class="w-full p-2 border border-gray-300 rounded-md">
         
                     <label for="distance">Distance</label>
-                    <div class="slider-container">
-                        <input type="range" id="distance" min="1" max="100" value="50">
+                    <div class="slider-container flex items-center gap-2">
+                        <input type="range" id="distance" min="1" max="200" value="10" class="flex-grow">
                         <span id="distanceValue">50km</span>
                     </div>
         
                     <label for="sort">Trier par</label>
-                    <select id="sort">
+                    <select id="sort" class="w-full p-2 border border-gray-300 rounded-md">
                         <option value="closest">Le plus proche</option>
                         <option value="recent">Le plus récent</option>
                     </select>
         
                     <label>Catégories</label>
-                    <div class="categories">
-                        <button class="category-btn" data-category="Art">🎨 Art</button>
-                        <button class="category-btn" data-category="Musique">🎵 Musique</button>
-                        <button class="category-btn" data-category="Sport">⚽ Sport</button>
-                        <button class="category-btn" data-category="Humanitaire">❤️ Humanitaire</button>
-                        <button class="category-btn" data-category="Droits">⚖️ Droits / Inclusion</button>
-                        <button class="category-btn" data-category="Enseignement">📚 Enseignement</button>
+                    <div class="categories flex flex-wrap gap-2">
+                        <button class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">🎨 Art</button>
+                        <button class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">🎵 Musique</button>
+                        <button class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">⚽ Sport</button>
+                        <button class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">❤️ Humanitaire</button>
+                        <button class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">⚖️ Droits / Inclusion</button>
+                        <button class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">📚 Enseignement</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="flex justify-center items-center mt-20 w-3/4">
-        <div class="flex gap-x-10 gap-y-5 flex-row flex-wrap w-2/3">
+        <div class="card-container flex gap-x-10 gap-y-5 flex-row flex-wrap w-2/3">
             <?php if (!empty($associations)): ?>
                 <?php foreach ($associations as $association): ?>
                     <?php
@@ -183,7 +183,97 @@ if ($result->num_rows > 0) {
                 });
             });
         });
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const rangeInput = document.getElementById("distance");
+    const distanceValue = document.getElementById("distanceValue");
+
+    // Met à jour le texte au chargement
+    distanceValue.textContent = `${rangeInput.value} km`;
+
+    // Écoute les changements de l'input range
+    rangeInput.addEventListener("input", function () {
+        distanceValue.textContent = `${this.value} km`;
+    });
+
+
+    const filters = document.querySelectorAll("#city, #distance, #sort");
+
+    filters.forEach(filter => {
+        filter.addEventListener("input", updateAssociations);
+    });
+
+   function updateAssociations() {
+    let city = document.querySelector("#city").value;
+    let distance = document.querySelector("#distance").value;
+    let sort = document.querySelector("#sort").value;
+
+    if (city) {
+        // Récupérer les coordonnées de la ville
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    let cityLat = data[0].lat;
+                    let cityLon = data[0].lon;
+
+                    // Envoyer les coordonnées de la ville au serveur
+                    fetch("filter_associations.php", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: `lat=${cityLat}&lon=${cityLon}&distance=${distance}&sort=${sort}`
+                    })
+                        .then(response => response.json())
+                        .then(updateAssociationsUI)
+                        .catch(error => console.error("Erreur lors du chargement des associations :", error));
+                } else {
+                    console.warn("Aucune correspondance pour la ville saisie.");
+                }
+            })
+            .catch(error => console.error("Erreur lors de la récupération des coordonnées :", error));
+    } else {
+        // Si aucune ville n'est entrée, utiliser les coordonnées de l'utilisateur
+        fetch("filter_associations.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `lat=<?= $user_lat ?>&lon=<?= $user_lon ?>&distance=${distance}&sort=${sort}`
+        })
+            .then(response => response.json())
+            .then(updateAssociationsUI)
+            .catch(error => console.error("Erreur lors du chargement des associations :", error));
+    }
+}
+
+function updateAssociationsUI(data) {
+    const container = document.querySelector(".card-container");
+    container.innerHTML = "";
+
+    data.forEach(association => {
+        let associationHTML = `
+            <a class="transform w-72 h-[400px] bg-white rounded-lg shadow-md flex flex-col hover:shadow-lg transition-all duration-500 hover:scale-110 hover:bg-slate-100 association-link"
+               href="association.php" data-id="${association.association_id}">
+                <img src="assets/uploads/background_image/defaultAssociation.jpg" alt="Illustration"
+                     class="w-full rounded-md">
+                <div class="p-5">
+                    <div class="flex justify-between items-start mt-3">
+                        <h2 class="text-lg font-bold">${association.association_name}</h2>
+                        <p class="text-sm text-gray-500">${association.distance.toFixed(2)} km</p>
+                    </div>
+                    <p class="bg-gray-200 text-sm px-3 py-1 rounded-full mt-2 w-max">📖 Tutorat</p>
+                    <p class="text-sm text-gray-700 mt-2 line-clamp-6">${association.association_mission}</p>
+                </div>
+            </a>`;
+        container.insertAdjacentHTML("beforeend", associationHTML);
+    });
+}
+
+});
+
     </script>
+
+    
 
     <script type="module" src="../node_modules/dropzone/dist/dropzone-min.js"></script>
     <script type="module" src="js/script.js"></script>
