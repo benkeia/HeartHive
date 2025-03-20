@@ -49,5 +49,3 @@ if ($result->num_rows > 0) {
 
 $sql->close();
 $conn->close();
-
-?>

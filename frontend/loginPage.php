@@ -1,3 +1,17 @@
+<?php
+
+session_start();
+
+include '../backend/db.php';
+
+if (isset($_SESSION['authentification']) && $_SESSION['authentification'] == true) {
+    header('Location: index.php');
+    exit();
+}
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
