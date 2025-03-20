@@ -8,10 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
-    rel="stylesheet">
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="frontend/assets/css/style.css">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -61,7 +61,7 @@ function haversine($lat1, $lon1, $lat2, $lon2)
 }
 
 // Récupérer les associations
-$sql = "SELECT association_name, association_siren, association_adress, association_mail, association_date, 
+$sql = "SELECT association_id, association_name, association_siren, association_adress, association_mail, association_date, 
                association_profile_picture, association_mission 
         FROM association";
 $result = $conn->query($sql);
@@ -101,7 +101,8 @@ if ($result->num_rows > 0) {
                     $association_adress = json_decode($association['association_adress'], true);
                     $coordinates = implode(', ', $association_adress['coordinates']);
                     ?>
-                   <div class="transform w-72 h-[400px] bg-white rounded-lg shadow-md flex flex-col hover:shadow-lg transition-all duration-500 hover:scale-110 hover:bg-slate-100">
+                    <a class="transform w-72 h-[400px] bg-white rounded-lg shadow-md flex flex-col hover:shadow-lg transition-all duration-500 hover:scale-110 hover:bg-slate-100 association-link"
+                        href="association.php" data-id="<?= htmlspecialchars($association['association_id']) ?>">
                         <img src="assets/uploads/background_image/defaultAssociation.jpg" alt="Illustration"
                             class="w-full rounded-md">
                         <div class="p-5">
@@ -117,13 +118,37 @@ if ($result->num_rows > 0) {
                                 <?= htmlspecialchars($association['association_mission']) ?>
                             </p>
                         </div>
-                    </div>
+                    </a>
                 <?php endforeach; ?>
             <?php else: ?>
                 <p>Aucune association trouvée.</p>
             <?php endif; ?>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".association-link").forEach(link => {
+                link.addEventListener("click", function (event) {
+                    event.preventDefault(); // Empêche la redirection immédiate
+                    let associationId = this.getAttribute("data-id");
+
+                    // Envoi de l'ID en session via une requête AJAX
+                    fetch("set_session.php", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: "association_id=" + associationId
+                    })
+                        .then(response => response.text())
+                        .then(() => {
+                            window.location.href = "association.php"; // Redirection après stockage
+                        });
+                });
+            });
+        });
+    </script>
 
     <script type="module" src="../node_modules/dropzone/dist/dropzone-min.js"></script>
     <script type="module" src="js/script.js"></script>

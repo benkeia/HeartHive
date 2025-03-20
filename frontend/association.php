@@ -23,8 +23,13 @@
     $associationStatement = $conn->prepare("SELECT * FROM association WHERE association_id = ?");
     $associationStatement->bind_param("i", $associationId);
 
+    if (!isset($_SESSION['association_id'])) {
+        die("Aucune association sélectionnée.");
+    }
+    $association_id = $_SESSION['association_id'];
+    
     // Remplacez 0 par la valeur souhaitée
-    $associationId = 1;
+    $associationId = $association_id;
     $associationStatement->execute();
 
     // Récupération des résultats
