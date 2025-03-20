@@ -5,8 +5,7 @@ session_start();
 include '../backend/db.php';
 
 if (isset($_SESSION['authentification']) && $_SESSION['authentification'] == true) {
-    header('Location: index.php');
-    exit();
+    echo 'Vous êtes déjà connecté.';
 }
 
 ?>
