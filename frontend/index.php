@@ -93,7 +93,42 @@ if ($result->num_rows > 0) {
     <h1>HeartHive</h1>
 
     <p>Recommandations d'associations proches de vous (Rayon : <?= htmlspecialchars($user_range) ?> km) :</p>
-    <div class="flex justify-center items-center mt-20">
+    <div class="main-container flex flex-row ">
+    <div class="container w-1/4">
+        <div class="row">
+            <div class="col-3">
+                <div class="filtres">
+                    <h2>Filtres</h2>
+        
+                    <label for="city">Ville</label>
+                    <input type="text" id="city" placeholder="Rechercher une ville...">
+        
+                    <label for="distance">Distance</label>
+                    <div class="slider-container">
+                        <input type="range" id="distance" min="1" max="100" value="50">
+                        <span id="distanceValue">50km</span>
+                    </div>
+        
+                    <label for="sort">Trier par</label>
+                    <select id="sort">
+                        <option value="closest">Le plus proche</option>
+                        <option value="recent">Le plus récent</option>
+                    </select>
+        
+                    <label>Catégories</label>
+                    <div class="categories">
+                        <button class="category-btn" data-category="Art">🎨 Art</button>
+                        <button class="category-btn" data-category="Musique">🎵 Musique</button>
+                        <button class="category-btn" data-category="Sport">⚽ Sport</button>
+                        <button class="category-btn" data-category="Humanitaire">❤️ Humanitaire</button>
+                        <button class="category-btn" data-category="Droits">⚖️ Droits / Inclusion</button>
+                        <button class="category-btn" data-category="Enseignement">📚 Enseignement</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="flex justify-center items-center mt-20 w-3/4">
         <div class="flex gap-x-10 gap-y-5 flex-row flex-wrap w-2/3">
             <?php if (!empty($associations)): ?>
                 <?php foreach ($associations as $association): ?>
@@ -125,7 +160,7 @@ if ($result->num_rows > 0) {
             <?php endif; ?>
         </div>
     </div>
-
+    </div>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             document.querySelectorAll(".association-link").forEach(link => {
