@@ -31,6 +31,40 @@
 </head>
 
 <body>
+
+  <div class="choice">
+    <input type="radio" id="particulier" name="user_type" value="0" checked>
+    <label for="particulier" class="toggle">Je suis un particulier</label>
+    <input type="radio" id="association" name="user_type" value="1">
+    <label for="association" class="toggle">Je suis une association</label>
+  </div>
+
+  <style>
+    .choice {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: -100px;
+    }
+
+    .choice input[type="radio"] {
+      display: none;
+    }
+
+    .choice .toggle {
+      padding: 10px 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .choice input[type="radio"]:checked+.toggle {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+  </style>
   <form
     action="../backend/traitement_formulaire.php"
     method="POST"
@@ -59,7 +93,32 @@
       </p>
 
       <div class="input-group">
-        <label for="surname">Nom</label>
+        <label for="surname" id="surname-label">Nom</label>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            const particulierRadio = document.getElementById('particulier');
+            const associationRadio = document.getElementById('association');
+            const surnameLabel = document.getElementById('surname-label');
+            const nameLabel = document.querySelector('label[for="name"]');
+            const birthLabel = document.querySelector('label[for="birth"]');
+
+            particulierRadio.addEventListener('change', function() {
+              if (particulierRadio.checked) {
+                surnameLabel.textContent = 'Nom';
+                nameLabel.textContent = 'Prénom';
+                birthLabel.textContent = 'Date de naissance';
+              }
+            });
+
+            associationRadio.addEventListener('change', function() {
+              if (associationRadio.checked) {
+                surnameLabel.textContent = "Nom de l'association";
+                nameLabel.textContent = 'Numéro de SIRET';
+                birthLabel.textContent = "Date de création de l'association";
+              }
+            });
+          });
+        </script>
         <input
           type="text"
           id="surname"
