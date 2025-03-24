@@ -34,6 +34,7 @@ try {
         $row = $result->fetch_assoc();
         if (sha1($password) === $row['user_password']) {
             $_SESSION['firstname'] = $row['user_firstname'];
+            $_SESSION['mail'] = $row['mail'];
             $_SESSION['name'] = $row['user_name'];
             $_SESSION['user_id'] = $row['user_id'];
             $_SESSION['type'] = $row['user_type'];
@@ -43,7 +44,7 @@ try {
             $_SESSION['user_bio'] = $row['user_bio'] ?? '';
             $_SESSION['user_tags'] = $row['user_tags'] ?? '{}';
 
-            sendResponse(true, 'Connexion réussie', 'profile.php');
+            sendResponse(true, 'Connexion réussie', 'index.php');
         }
         sendResponse(false, 'Mot de passe incorrect');
     }
