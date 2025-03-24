@@ -31,7 +31,9 @@ include '../backend/db.php';
 <header
     class="bg-custom-pink shadow-md p-4 flex items-center justify-between absolute top-0 left-0 w-full z-10">
     <!-- Logo -->
-    <div class="text-xl font-bold text-gray-800">Logo</div>
+    <a href="index.php">
+        <img src="assets/img/LogoHeader.png" class="h-12 ml-4" alt="">
+    </a>
 
     <!-- Barre de recherche -->
     <div class="relative w-1/3">
@@ -109,14 +111,16 @@ include '../backend/db.php';
                             Paramètres
                         </div>
                     </a>
-                    <a href="certifications.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                            </svg>
-                            Certifications
-                        </div>
-                    </a>
+                    <?php if ($_SESSION['type'] != 1): ?>
+                        <a href="certifications.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                </svg>
+                                Certifications
+                            </div>
+                        </a>
+                    <?php endif; ?>
                     <hr class="my-1">
                     <a href="disconnect.php" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
                         <div class="flex items-center">

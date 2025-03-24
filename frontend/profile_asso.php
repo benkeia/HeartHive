@@ -3,9 +3,9 @@
 session_start();
 include '../backend/db.php';
 
-
-if (isset($_SESSION['type']) && $_SESSION['type'] == 1) {
-  header('Location: profile_asso.php');
+// Vérification du type de session
+if (isset($_SESSION['type']) && $_SESSION['type'] == 0) {
+  header('Location: profile.php');
   exit;
 }
 
@@ -149,12 +149,9 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
     <!-- Menu latéral -->
     <div class="w-full md:w-1/4 bg-white rounded-xl shadow-custom overflow-hidden">
       <div class="p-5">
-        <h3 class="text-xl font-bold mb-6 text-gray-800">Mon compte</h3>
+        <h3 class="text-xl font-bold mb-6 text-gray-800">Compte de l'association</h3>
         <ul class="space-y-1">
-          <li class="menu-item active p-3 rounded-lg text-gray-700">Mon profil</li>
-          <li class="menu-item p-3 rounded-lg text-gray-700">Mes engagements</li>
-          <li class="menu-item p-3 rounded-lg text-gray-700">Statistiques</li>
-          <li class="menu-item p-3 rounded-lg text-gray-700">Certifications</li>
+          <li class="menu-item active p-3 rounded-lg text-gray-700">informations</li>
           <li class="menu-item p-3 rounded-lg text-gray-700">Messagerie</li>
           <li class="menu-item p-3 rounded-lg text-gray-700">Paramètres</li>
         </ul>
@@ -177,7 +174,7 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
           </div>
 
           <div class="flex-1">
-            <h2 id="profileName" class="text-2xl font-bold text-gray-800 mb-1"><?php echo $_SESSION['firstname'] . ' ' . $_SESSION['name']; ?></h2>
+            <h2 id="profileName" class="text-2xl font-bold text-gray-800 mb-1"><?php echo $_SESSION['firstname'] ?></h2>
             <h4 id="profileLocation" class="flex items-center text-gray-600 mb-3 font-medium">
               <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
@@ -248,7 +245,7 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
         <div class="flex flex-col lg:flex-row mt-12 gap-8">
           <div class="w-full lg:w-1/2">
             <div class="mb-8">
-              <h2 class="section-title text-lg">Mes centres d'intérêts</h2>
+              <h2 class="section-title text-lg">Domaines d'activités de l'association</h2>
               <div id="interestsContainer" class="flex flex-wrap gap-2 mt-4">
                 <!-- Boutons cochables apparaissent ici -->
               </div>
@@ -270,26 +267,6 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
               </div>
             </div>
 
-            <div>
-              <h2 class="section-title text-lg">Mes compétences</h2>
-              <div id="skillsContainer" class="flex flex-wrap gap-2 mt-4"></div>
-
-              <div class="tag-input-container mt-5">
-                <div class="search-wrapper">
-                  <input type="text" id="skillSearch" class="tag-search" placeholder="Rechercher une compétence...">
-                  <button id="addSkillBtn" class="add-tag-btn">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                  </button>
-                </div>
-                <div id="skillMenu" class="hidden tag-menu">
-                  <ul id="skillList" class="tag-list">
-                    <!-- Liste des compétences possibles -->
-                  </ul>
-                </div>
-              </div>
-            </div>
 
             <style>
               .tag {
@@ -411,11 +388,7 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
             </style>
           </div>
 
-          <!-- Bloc des disponibilités -->
-          <div class="w-full lg:w-1/2">
-            <?php include 'include/update_availability.php'; ?>
 
-          </div>
         </div>
       </div>
     </div>

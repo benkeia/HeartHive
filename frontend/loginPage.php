@@ -12,7 +12,7 @@ if (isset($_SESSION['authentification']) && $_SESSION['authentification'] == tru
 
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
@@ -21,6 +21,7 @@ if (isset($_SESSION['authentification']) && $_SESSION['authentification'] == tru
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/alerts.css">
     <title>Page de connexion</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
@@ -29,20 +30,40 @@ if (isset($_SESSION['authentification']) && $_SESSION['authentification'] == tru
     ?>
     <div id="container">
         <h1>Connexion au site</h1>
-
+        <div id="error-message" class="alert alert-error"></div>
         <form id="login-form" action="" method="post" class="form">
-
-
             <label for="mail">Entrez votre email :</label>
             <input type="email" id="mail" name="mail" placeholder="mail" required>
             <label for="password">Entrez votre mot de passe :</label>
             <input type="password" id="password" name="password" placeholder="mot de passe" required>
             <input type="submit" value="Valider" class="btn">
         </form>
-        <div id="error-message" class="alert alert-error"></div>
     </div>
 
+    <script>
+        $(document).ready(function() {
+            $('#login-form').on('submit', function(e) {
+                e.preventDefault();
 
+                $.ajax({
+                    url: 'login.php',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            window.location.href = response.redirect;
+                        } else {
+                            $('#error-message').text(response.message).show();
+                        }
+                    },
+                    error: function() {
+                        $('#error-message').text('Une erreur est survenue').show();
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>
