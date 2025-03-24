@@ -34,10 +34,10 @@ try {
         $row = $result->fetch_assoc();
         if (sha1($password) === $row['user_password']) {
             $_SESSION['firstname'] = $row['user_firstname'];
-            $_SESSION['mail'] = $row['mail'];
             $_SESSION['name'] = $row['user_name'];
             $_SESSION['user_id'] = $row['user_id'];
             $_SESSION['type'] = $row['user_type'];
+            $_SESSION['mail'] = $row['user_mail'];
             $_SESSION['authentification'] = true;
             $_SESSION['user_profile_picture'] = $row['user_profile_picture'] ?? 'assets/uploads/profile_pictures/default.webp';
             $_SESSION['user_adress'] = $row['user_adress'] ?? '';

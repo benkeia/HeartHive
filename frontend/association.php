@@ -70,12 +70,11 @@
                 </div>
                 <hr>
                 <div class="associationLocation flex gap-x-5">
-                    <div class="imageLocationContainer flex flex-col rounded-2xl shadow-lg w-2/2">
+                    <div class="imageLocationContainer flex flex-col rounded-2xl shadow-lg w-1/2 h-[300px]">
                         <img src="" alt="">
-                        <div id="map" style="height: 400px; width: 100%;"></div>
-                        
+                        <div id="map" style="height: 400px; width: 100%;" class="z-0"></div> 
                     </div>
-                    <div class="buttonPostulateContainer">
+                    <div class="buttonPostulateContainer w-1/2">
                         <form id="postulationForm">
                             <input type="hidden" name="association_id" value="<?php echo $associationId; ?>">
                             <button type="submit" id="postulerBtn"
@@ -182,7 +181,7 @@
             if (associationData && associationData.coordinates && associationData.coordinates.length === 2) {
                 let lat = parseFloat(associationData.coordinates[1]); // Latitude
                 let lon = parseFloat(associationData.coordinates[0]); // Longitude
-
+                
                 // Initialisation de la carte Leaflet
                 let map = L.map('map').setView([lat, lon], 13); // Zoom par défaut
 
