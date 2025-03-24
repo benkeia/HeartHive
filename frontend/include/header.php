@@ -63,7 +63,7 @@ include '../backend/db.php';
         <!-- Icône de notification -->
         <button class="relative">
             <svg
-                class="w-6 h-6 text-gray-600 hover:text-gray-800"
+                class="w-8 h-8 text-gray-600 hover:text-gray-800"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -82,7 +82,7 @@ include '../backend/db.php';
                 <img
                     src="<?php echo $_SESSION['user_profile_picture'] ?>"
                     alt="Profil"
-                    class="w-10 h-10 rounded-full border border-gray-300" />
+                    class="w-12 h-12 rounded-full border border-gray-300" />
             </a>
 
             <!-- Popover au hover -->
