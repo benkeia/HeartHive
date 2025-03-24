@@ -75,4 +75,4 @@ include '../backend/db.php';
         </a>
     </div>
 </header>
-<div class="h-[60px]"></div>
+<div class="h-[70px]"></div>

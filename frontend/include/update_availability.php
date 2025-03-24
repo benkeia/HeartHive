@@ -490,7 +490,6 @@ $stmt->close();
         <div id="status-message" class="status-message"></div>
 
         <div class="actions">
-            <button class="btn-cancel" id="cancel-btn">Annuler</button>
             <button class="btn-secondary" id="clear-btn">Tout effacer</button>
             <button class="btn-primary" id="save-btn">Enregistrer</button>
         </div>
@@ -554,6 +553,7 @@ $stmt->close();
                 const now = new Date();
                 const currentHour = now.getHours();
                 const currentMinute = now.getMinutes();
+                const currentDay = now.getDay(); // 0 (Dimanche) à 6 (Samedi)
 
                 // Vérifier si l'heure actuelle est dans notre plage (8h-21h)
                 if (currentHour >= 8 && currentHour <= 21) {
@@ -565,10 +565,11 @@ $stmt->close();
                     indicator.className = 'current-hour-indicator';
                     indicator.style.top = `${topPosition}px`;
 
-                    // Ajouter l'indicateur à chaque colonne de jour
-                    document.querySelectorAll('.day-column').forEach(column => {
-                        column.appendChild(indicator.cloneNode(true));
-                    });
+                    // Ajouter l'indicateur uniquement à la colonne du jour actuel
+                    const dayColumn = document.querySelector(`.day-column[data-day="${days[currentDay - 1]}"]`);
+                    if (dayColumn) {
+                        dayColumn.appendChild(indicator);
+                    }
                 }
             }
 
@@ -706,10 +707,7 @@ $stmt->close();
                 showStatusMessage('Toutes les disponibilités ont été effacées');
             });
 
-            // Événement pour le bouton "Annuler"
-            cancelBtn.addEventListener('click', function() {
-                window.location.href = 'view_availability.php';
-            });
+
 
             // Événement pour le bouton "Enregistrer"
             saveBtn.addEventListener('click', function() {
@@ -741,9 +739,7 @@ $stmt->close();
                         if (response.success) {
                             showStatusMessage('Vos disponibilités ont été enregistrées avec succès !');
                             // Redirection vers la page de visualisation après 1.5 secondes
-                            setTimeout(() => {
-                                window.location.href = 'view_availability.php';
-                            }, 1500);
+
                         } else {
                             showStatusMessage('Erreur: ' + response.message, 'error');
                         }

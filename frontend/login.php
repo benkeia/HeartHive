@@ -31,6 +31,18 @@ if ($result->num_rows > 0) {
         $_SESSION['user_profile_picture'] = $row['user_profile_picture'];
         $_SESSION['user_adress'] = $row['user_adress'];
         $_SESSION['user_bio'] = $row['user_bio'];
+
+        // Récupérer les informations de l'utilisateur, y compris les tags
+        $query = "SELECT * FROM user WHERE user_id = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param('i', $row['user_id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $userData = $result->fetch_assoc();
+
+        // Stocker les tags dans la session
+        $_SESSION['user_tags'] = $userData['user_tags'] ?? '{}';
+
         // Redirection en fonction du type d'utilisateur
         switch ($row['user_type']) {
             case 0:

@@ -1,4 +1,3 @@
-
 //searchBar
 function searchFunction() {
     let input = document.getElementById("searchBar").value.toLowerCase();
@@ -14,148 +13,259 @@ function searchFunction() {
     });
 }
 
-
-
-//Centres d'interets
+// Système de gestion des tags (centres d'intérêts et compétences)
 
 document.addEventListener("DOMContentLoaded", function () {
-    const interestsContainer = document.getElementById("interestsContainer");
-    const addInterestBtn = document.getElementById("addInterestBtn");
-    const interestMenu = document.getElementById("interestMenu");
-    const interestList = document.getElementById("interestList");
-
-    // Liste des centres d'intérêts disponibles
-    let availableInterests = ["Musique", "Sport", "Voyages", "Lecture", "Cinéma", "Cuisine"];
-    let activeInterests = [];
-
-    // Fonction pour afficher les centres d'intérêts actifs
-    function renderInterests() {
-        interestsContainer.innerHTML = "";
-        activeInterests.forEach((interest) => {
-            let btn = document.createElement("button");
-            btn.textContent = interest;
-            btn.classList.add("interest-btn");
-            btn.onclick = () => removeInterest(interest);
-            interestsContainer.appendChild(btn);
-        });
-    }
-
-    // Supprimer un centre d'intérêt
-    function removeInterest(interest) {
-        activeInterests = activeInterests.filter((i) => i !== interest);
-        renderInterests();
-    }
-
-    // Ouvrir/Fermer le menu des centres d'intérêt
-    function toggleInterestMenu() {
-        interestMenu.style.display = interestMenu.style.display === "block" ? "none" : "block";
-        interestList.innerHTML = "";
-
-        availableInterests.forEach((interest) => {
-            if (!activeInterests.includes(interest)) {
-                let li = document.createElement("li");
-                let checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.value = interest;
-
-                checkbox.onchange = function () {
-                    if (this.checked) {
-                        activeInterests.push(interest);
-                        renderInterests();
-                        interestMenu.style.display = "none"; // Ferme le menu après sélection
-                    }
-                };
-
-                li.appendChild(checkbox);
-                li.appendChild(document.createTextNode(interest));
-                interestList.appendChild(li);
-            }
-        });
-    }
-
-    // Événement sur le bouton "+"
-    addInterestBtn.addEventListener("click", toggleInterestMenu);
-
-    // Affichage initial
-    renderInterests();
-});
-
-
-
-// Compétences
-
-document.addEventListener("DOMContentLoaded", function () {
-    const skillsContainer = document.getElementById("skillsContainer");
-    const addSkillBtn = document.getElementById("addSkillBtn");
-    const skillMenu = document.getElementById("skillMenu");
-    const skillList = document.getElementById("skillList");
-
-    // Liste des compétences disponibles
-    let availableSkills = ["HTML", "CSS", "JavaScript", "Python", "React", "SQL"];
-    let activeSkills = [];
-
-    // Fonction pour afficher les compétences actives
-    function renderSkills() {
-        skillsContainer.innerHTML = "";
-        activeSkills.forEach((skill) => {
-            let btn = document.createElement("button");
-            btn.textContent = skill;
-            btn.classList.add("interest-btn"); // Réutilisation du même style que les centres d’intérêts
-            btn.onclick = () => removeSkill(skill);
-            skillsContainer.appendChild(btn);
-        });
-    }
-
-    // Supprimer une compétence
-    function removeSkill(skill) {
-        activeSkills = activeSkills.filter((s) => s !== skill);
-        renderSkills();
-    }
-
-    // Ouvrir/Fermer le menu des compétences
-    function toggleSkillMenu() {
-        if (skillMenu.style.display === "block") {
-            skillMenu.style.display = "none";
-        } else {
-            skillMenu.style.display = "block";
-
-            // Positionner le menu sous le bouton "+"
-            let btnRect = addSkillBtn.getBoundingClientRect();
-            skillMenu.style.top = `${btnRect.bottom + window.scrollY + 5}px`;
-            skillMenu.style.left = `${btnRect.left + window.scrollX}px`;
+    // Récupération des tags existants depuis la session
+    let userTags = {};
+    try {
+        // Si des tags sont disponibles dans un attribut data, on les utilise
+        const tagsElement = document.getElementById('userTagsData');
+        if (tagsElement) {
+            userTags = JSON.parse(tagsElement.dataset.tags || '{}');
         }
+    } catch (e) {
+        console.error("Erreur lors du parsing des tags:", e);
+        userTags = {};
+    }
 
-        skillList.innerHTML = "";
+    // Configuration du système de tags pour les centres d'intérêt
+    initTagSystem({
+        containerSelector: "#interestsContainer",
+        searchSelector: "#interestSearch",
+        addBtnSelector: "#addInterestBtn",
+        menuSelector: "#interestMenu",
+        listSelector: "#interestList",
+        availableItems: ["Musique", "Sport", "Voyages", "Lecture", "Cinéma", "Cuisine", 
+                         "Art", "Photographie", "Technologie", "Nature", "Jardinage", 
+                         "Danse", "Théâtre", "Bénévolat", "Méditation", "Mode"],
+        activeItems: userTags.interests || [],
+        tagClass: "tag interest-tag",
+        tagType: "interests"
+    });
 
-        availableSkills.forEach((skill) => {
-            if (!activeSkills.includes(skill)) {
-                let li = document.createElement("li");
-                let checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.value = skill;
+    // Configuration du système de tags pour les compétences
+    initTagSystem({
+        containerSelector: "#skillsContainer",
+        searchSelector: "#skillSearch",
+        addBtnSelector: "#addSkillBtn",
+        menuSelector: "#skillMenu",
+        listSelector: "#skillList",
+        availableItems: ["HTML", "CSS", "JavaScript", "Python", "PHP", "SQL", "React", 
+                         "Angular", "Vue", "Node.js", "Ruby", "Java", "C#", ".NET", 
+                         "WordPress", "Photoshop", "Illustrator", "Communication", "Gestion de projet"],
+        activeItems: userTags.skills || [],
+        tagClass: "tag skill-tag",
+        tagType: "skills"
+    });
+});
 
-                checkbox.onchange = function () {
-                    if (this.checked) {
-                        activeSkills.push(skill);
-                        renderSkills();
-                        skillMenu.style.display = "none"; // Ferme le menu après sélection
-                    }
-                };
+// Fonction pour envoyer les tags au serveur
+function saveTags(type, tags) {
+    return fetch('../backend/update_tags.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            type: type,
+            tags: tags
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Affichage d'une notification de succès
+            showNotification("Tags mis à jour avec succès", "success");
+            return true;
+        } else {
+            console.error("Erreur lors de la sauvegarde:", data.message);
+            showNotification("Erreur: " + data.message, "error");
+            return false;
+        }
+    })
+    .catch(error => {
+        console.error("Erreur:", error);
+        showNotification("Erreur de connexion", "error");
+        return false;
+    });
+}
 
-                li.appendChild(checkbox);
-                li.appendChild(document.createTextNode(skill));
-                skillList.appendChild(li);
-            }
+// Affichage d'une notification
+function showNotification(message, type = "info") {
+    // Création de l'élément de notification
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    // Styles pour la notification
+    notification.style.position = 'fixed';
+    notification.style.bottom = '20px';
+    notification.style.right = '20px';
+    notification.style.padding = '12px 20px';
+    notification.style.borderRadius = '6px';
+    notification.style.zIndex = '1000';
+    notification.style.fontSize = '14px';
+    notification.style.fontWeight = '500';
+    notification.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+    
+    if (type === 'success') {
+        notification.style.backgroundColor = '#d1fae5';
+        notification.style.color = '#065f46';
+        notification.style.border = '1px solid #a7f3d0';
+    } else if (type === 'error') {
+        notification.style.backgroundColor = '#fee2e2';
+        notification.style.color = '#991b1b';
+        notification.style.border = '1px solid #fecaca';
+    } else {
+        notification.style.backgroundColor = '#e0f2fe';
+        notification.style.color = '#075985';
+        notification.style.border = '1px solid #bae6fd';
+    }
+    
+    // Ajout au DOM
+    document.body.appendChild(notification);
+    
+    // Suppression après 3 secondes
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 500);
+    }, 3000);
+}
+
+// Fonction réutilisable pour initialiser un système de tags
+function initTagSystem(config) {
+    const container = document.querySelector(config.containerSelector);
+    const searchInput = document.querySelector(config.searchSelector);
+    const addBtn = document.querySelector(config.addBtnSelector);
+    const menu = document.querySelector(config.menuSelector);
+    const list = document.querySelector(config.listSelector);
+    let availableItems = [...config.availableItems];
+    let activeItems = [...config.activeItems];
+    
+    // Filtrer les éléments disponibles pour exclure ceux déjà actifs
+    availableItems = availableItems.filter(item => !activeItems.includes(item));
+
+    // Rendu des tags actifs
+    function renderTags() {
+        container.innerHTML = "";
+        activeItems.forEach(item => {
+            const tag = document.createElement("div");
+            tag.className = config.tagClass;
+            tag.innerHTML = `
+                ${item}
+                <svg class="remove-tag" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            `;
+            tag.querySelector(".remove-tag").addEventListener("click", () => removeTag(item));
+            container.appendChild(tag);
         });
     }
 
-    // Événement sur le bouton "+"
-    addSkillBtn.addEventListener("click", toggleSkillMenu);
+    // Supprimer un tag
+    function removeTag(item) {
+        activeItems = activeItems.filter(i => i !== item);
+        availableItems.push(item);
+        availableItems.sort();
+        renderTags();
+        saveTags(config.tagType, activeItems);
+    }
+
+    // Ajouter un tag
+    function addTag(item) {
+        if (!activeItems.includes(item) && item.trim() !== "") {
+            activeItems.push(item);
+            availableItems = availableItems.filter(i => i !== item);
+            renderTags();
+            searchInput.value = "";
+            renderFilteredList("");
+            saveTags(config.tagType, activeItems);
+        }
+    }
+
+    // Filtrer et afficher la liste des éléments disponibles
+    function renderFilteredList(filter = "") {
+        list.innerHTML = "";
+        const filteredItems = availableItems.filter(item => 
+            item.toLowerCase().includes(filter.toLowerCase())
+        );
+        
+        if (filteredItems.length === 0) {
+            const li = document.createElement("li");
+            li.textContent = "Aucun résultat trouvé";
+            li.style.fontStyle = "italic";
+            li.style.color = "#888";
+            list.appendChild(li);
+        } else {
+            filteredItems.forEach(item => {
+                const li = document.createElement("li");
+                li.textContent = item;
+                li.addEventListener("click", () => {
+                    addTag(item);
+                    menu.classList.add("hidden");
+                });
+                list.appendChild(li);
+            });
+        }
+    }
+
+    // Initialisation des événements
+    searchInput.addEventListener("focus", () => {
+        menu.classList.remove("hidden");
+        renderFilteredList(searchInput.value);
+    });
+
+    searchInput.addEventListener("input", () => {
+        renderFilteredList(searchInput.value);
+    });
+
+    addBtn.addEventListener("click", () => {
+        if (menu.classList.contains("hidden")) {
+            menu.classList.remove("hidden");
+            renderFilteredList(searchInput.value);
+            searchInput.focus();
+        } else {
+            menu.classList.add("hidden");
+        }
+    });
+
+    // Gérer les clics hors du menu pour le fermer
+    document.addEventListener("click", (event) => {
+        if (!event.target.closest(config.menuSelector) && 
+            !event.target.closest(config.searchSelector) && 
+            !event.target.closest(config.addBtnSelector)) {
+            menu.classList.add("hidden");
+        }
+    });
+
+    // Permettre l'ajout de tags personnalisés avec la touche Entrée
+    searchInput.addEventListener("keypress", (event) => {
+        if (event.key === "Enter" && searchInput.value.trim() !== "") {
+            const customTag = searchInput.value.trim();
+            
+            // Vérifier si le tag existe déjà dans les disponibles
+            if (availableItems.includes(customTag)) {
+                addTag(customTag);
+            } else {
+                // Ajouter un nouveau tag personnalisé
+                activeItems.push(customTag);
+                renderTags();
+                searchInput.value = "";
+                saveTags(config.tagType, activeItems);
+            }
+            
+            menu.classList.add("hidden");
+        }
+    });
 
     // Affichage initial
-    renderSkills();
-});
-
+    renderTags();
+    renderFilteredList();
+}
 
 // Calendar
 
@@ -213,12 +323,6 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("L'élément #calendar est introuvable.");
     }
 });
-
-
-
-
-
-
 
 // Modifier le profil
 
