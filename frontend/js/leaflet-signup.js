@@ -261,12 +261,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Vérifier que l'image est bien uploadée
-    form.on('form:submit', function() {
-        if (!profilePicInput.files.length) {
-            alert('Veuillez télécharger une photo de profil.');
-            return false; // Empêche la soumission du formulaire
-        }
-        return true; // Permet la soumission du formulaire
-    });
+  
 });
