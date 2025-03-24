@@ -169,49 +169,65 @@ document.addEventListener("DOMContentLoaded", function () {
     const sortSelect = document.getElementById("sort");
     let debounceTimer;
 
-     // Pré-remplir le champ avec l'adresse de l'utilisateur
-     if (typeof userDefaultCity !== 'undefined' && userDefaultCity) {
+    // Fonction pour attacher les événements de clic aux associations
+    function attachAssociationEventListeners() {
+        document.querySelectorAll(".association-link").forEach(link => {
+            link.addEventListener("click", function (event) {
+                event.preventDefault(); // Empêche la redirection immédiate
+
+                let associationId = this.getAttribute("data-id");
+
+                // Envoi de l'ID en session via une requête AJAX
+                fetch("set_session.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: "association_id=" + associationId
+                })
+                    .then(response => response.text())
+                    .then(() => {
+                        window.location.href = "association.php"; // Redirection après stockage
+                    })
+                    .catch(error => console.error("Erreur lors de l'envoi de l'ID :", error));
+            });
+        });
+    }
+
+    // Pré-remplir le champ avec l'adresse de l'utilisateur si disponible
+    if (typeof userDefaultCity !== 'undefined' && userDefaultCity) {
         cityInput.value = userDefaultCity;
     }
-    // Met à jour l'affichage de la distance
+
+    // Mise à jour de l'affichage de la distance
     distanceValue.textContent = `${rangeInput.value} km`;
-    
+
     // Gestion de la barre de distance avec incréments de 10km
     rangeInput.addEventListener("input", function () {
-        // Arrondir à la dizaine la plus proche
         const value = Math.round(this.value / 10) * 10;
-        
-        // Mettre à jour l'affichage immédiatement
         distanceValue.textContent = `${value} km`;
-        
-        // Debouncer l'appel à la fonction de filtrage
+
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
-            // S'assurer que la valeur est bien un multiple de 10
             this.value = value;
             updateAssociations();
         }, 500);
     });
 
     // Gestion du champ ville avec debounce
-    cityInput.addEventListener("input", function() {
+    cityInput.addEventListener("input", function () {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
             updateAssociations();
-        }, 1000); // Attendre 1 seconde après la fin de la saisie
+        }, 1000);
     });
 
     // Gestion du tri sans debounce (changement immédiat)
-    sortSelect.addEventListener("change", function() {
-        updateAssociations();
-    });
+    sortSelect.addEventListener("change", updateAssociations);
 
     function getUserLocation(callback) {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    const userCoords = { lat: position.coords.latitude, lon: position.coords.longitude };
-                    callback(userCoords);
+                    callback({ lat: position.coords.latitude, lon: position.coords.longitude });
                 },
                 () => {
                     console.warn("Impossible d'obtenir la localisation.");
@@ -226,37 +242,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateAssociations() {
         let city = cityInput.value.trim();
-        let distance = Math.round(rangeInput.value / 10) * 10; // Garantir un multiple de 10
-        let sort = sortSelect.value; // "closest" ou "recent"
+        let distance = Math.round(rangeInput.value / 10) * 10;
+        let sort = sortSelect.value;
 
         if (city) {
-            // Ne lance la requête que si la ville contient au moins 3 caractères
-            if (city.length < 3) {
-                return; // Ne pas lancer de requête si trop peu de caractères
-            }
+            if (city.length < 3) return; // Empêche les requêtes inutiles
             
-            // Ajouter un header User-Agent comme recommandé par Nominatim
-            const headers = {
-                "User-Agent": "HeartHive/1.0 barryvert@gmail.com)"
-            };
-            
-            // Géocoder l'adresse saisie
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`, {
-                headers: headers
+                headers: { "User-Agent": "HeartHive/1.0 (barryvert@gmail.com)" }
             })
                 .then(response => response.json())
                 .then(data => {
                     if (data.length > 0) {
-                        let cityLat = data[0].lat;
-                        let cityLon = data[0].lon;
-                        fetchFilteredAssociations(cityLat, cityLon, distance, sort);
+                        fetchFilteredAssociations(data[0].lat, data[0].lon, distance, sort);
                     } else {
                         console.warn("Aucune correspondance pour la ville saisie.");
                     }
                 })
                 .catch(error => console.error("Erreur lors de la récupération des coordonnées :", error));
         } else {
-            // Utiliser la localisation de l'utilisateur
             getUserLocation((userCoords) => {
                 if (userCoords) {
                     fetchFilteredAssociations(userCoords.lat, userCoords.lon, distance, sort);
@@ -268,10 +272,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function fetchFilteredAssociations(lat, lon, distance, sort) {
-        // Afficher un indicateur de chargement si nécessaire
         const container = document.querySelector(".card-container");
         container.innerHTML = "<p class='text-center w-full'>Chargement des associations...</p>";
-        
+
         fetch("filter_associations.php", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -295,18 +298,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         data.forEach(association => {
-            // Déterminer le message de tri approprié
-            let sortMessage = "";
-            if (sortSelect.value === "closest") {
-                sortMessage = `${association.distance.toFixed(2)} km`;
-            } else if (sortSelect.value === "recent") {
-                // Si vous avez une date de création dans vos données
-                sortMessage = association.created_at ? new Date(association.created_at).toLocaleDateString() : "";
-            }
+            let sortMessage = sortSelect.value === "closest"
+                ? `${association.distance.toFixed(2)} km`
+                : association.created_at
+                ? new Date(association.created_at).toLocaleDateString()
+                : "";
 
             let associationHTML = `
                 <a class="transform w-72 h-[400px] bg-white rounded-lg shadow-md flex flex-col hover:shadow-lg transition-all duration-500 hover:scale-110 hover:bg-slate-100 association-link"
-                   href="association.php?id=${association.association_id}" data-id="${association.association_id}">
+                   href="#" data-id="${association.association_id}">
                     <img src="${association.image_url || 'assets/uploads/background_image/defaultAssociation.jpg'}" alt="Illustration"
                          class="w-full rounded-md">
                     <div class="p-5">
@@ -321,17 +321,14 @@ document.addEventListener("DOMContentLoaded", function () {
             container.insertAdjacentHTML("beforeend", associationHTML);
         });
 
-        // Ajouter des écouteurs d'événements pour les liens d'association si nécessaire
-        document.querySelectorAll('.association-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                // Si vous avez besoin de code spécifique au clic, ajoutez-le ici
-            });
-        });
+        // Réattacher les événements de clic sur les nouvelles associations
+        attachAssociationEventListeners();
     }
 
     // Lancer la recherche initiale au chargement de la page
     updateAssociations();
 });
+
     </script>
 
     

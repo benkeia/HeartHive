@@ -67,6 +67,29 @@
                     <div class="imageLocationContainer flex flex-col rounded-2xl shadow-lg">
                         <img src="" alt="">
                         <p><?php echo $associationAdress ?></p>
+                    <div id="map" style="height: 400px; width: 100%;"></div>
+                    <script>
+                        function initMap() {
+                            const geocoder = new google.maps.Geocoder();
+                            const address = "<?php echo $associationAdress; ?>";
+
+                            geocoder.geocode({ 'address': address }, function (results, status) {
+                                if (status === 'OK') {
+                                    const map = new google.maps.Map(document.getElementById('map'), {
+                                        zoom: 15,
+                                        center: results[0].geometry.location
+                                    });
+                                    new google.maps.Marker({
+                                        map: map,
+                                        position: results[0].geometry.location
+                                    });
+                                } else {
+                                    console.error('Geocode was not successful for the following reason: ' + status);
+                                }
+                            });
+                        }
+                    </script>
+                    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
                     </div>
                     <div class="buttonPostulateContainer">
                         <form id="postulationForm">
