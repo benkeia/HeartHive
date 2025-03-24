@@ -5,7 +5,7 @@ session_start();
 include '../backend/db.php';
 
 if (isset($_SESSION['authentification']) && $_SESSION['authentification'] == true) {
-    echo 'Vous êtes déjà connecté.';
+    header('Location: profile.php');
 }
 
 ?>
@@ -42,33 +42,7 @@ if (isset($_SESSION['authentification']) && $_SESSION['authentification'] == tru
         <div id="error-message" class="alert alert-error"></div>
     </div>
 
-    <script>
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
 
-            const formData = new FormData(this);
-
-            fetch('login.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.text())
-                .then(data => {
-                    try {
-                        const result = JSON.parse(data);
-                        if (result.success) {
-                            window.location.href = result.redirect;
-                        } else {
-                            const errorDiv = document.getElementById('error-message');
-                            errorDiv.style.display = 'block';
-                            errorDiv.textContent = result.message;
-                        }
-                    } catch (e) {
-                        console.error('Erreur:', e);
-                    }
-                });
-        });
-    </script>
 </body>
 
 </html>

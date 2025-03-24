@@ -415,6 +415,9 @@ $stmt->close();
         }
 
         .tooltip {
+
+
+
             position: absolute;
             background-color: var(--gray-800);
             color: white;
@@ -426,10 +429,12 @@ $stmt->close();
             transition: opacity 0.2s;
             pointer-events: none;
             width: 240px;
-            top: 30px;
-            left: 0;
+            margin-top: 5px;
+
+
             box-shadow: var(--shadow);
         }
+
 
         .tooltip.show {
             opacity: 1;

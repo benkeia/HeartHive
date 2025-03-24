@@ -44,17 +44,17 @@
     <div class="mainAssociationContainer flex flex-col">
         <div class="topAssociationContainer flex">
             <div class="leftAssociationContainer">
-                <img src="<?php echo $associationBackgroundImage?>" alt="">
+                <img src="<?php echo $associationBackgroundImage ?>" alt="">
                 <div class="associationTitle flex gap-x-10">
-                    <img src="<?php echo $associationProfilePicture?>" alt="">
-                    <h1><?php echo $associationName?></h1>
+                    <img src="<?php echo $associationProfilePicture ?>" alt="">
+                    <h1><?php echo $associationName ?></h1>
                 </div>
-                <p><?php echo $associationDesc?></p>
+                <p><?php echo $associationDesc ?></p>
             </div>
             <div class="rightAssocaitionContainer">
                 <h2>NOM DE LA MISSION</h2>
                 <div class="associationInformationContainer flex flex-col gap-y-5">
-                    <p><?php echo $associationMission?></p>
+                    <p><?php echo $associationMission ?></p>
                 </div>
                 <hr>
                 <div class="associationLocation flex gap-x-5">
