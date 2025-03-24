@@ -38,10 +38,10 @@ include '../backend/db.php';
     <!-- Barre de recherche -->
     <div class="relative w-1/3">
         <input
+            id="searchInput"
             type="text"
             placeholder="Rechercher..."
             class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-
         <svg
             class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
             xmlns="http://www.w3.org/2000/svg"
@@ -54,6 +54,8 @@ include '../backend/db.php';
                 stroke-linejoin="round"
                 d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
         </svg>
+        <!-- Pop-up des résultats -->
+        <div id="searchResults" class="absolute w-full bg-white shadow-lg mt-2 rounded-lg max-h-60 overflow-y-auto z-50"></div>
     </div>
 
     <!-- Icônes à droite -->
@@ -96,7 +98,7 @@ include '../backend/db.php';
                     </a>
                     <a href="messages.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                         <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="CurrentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                             </svg>
                             Messages
@@ -104,7 +106,7 @@ include '../backend/db.php';
                     </a>
                     <a href="settings.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                         <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="CurrentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
@@ -114,7 +116,7 @@ include '../backend/db.php';
                     <?php if ($_SESSION['type'] != 1): ?>
                         <a href="certifications.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             <div class="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="CurrentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                                 </svg>
                                 Certifications
@@ -157,3 +159,87 @@ include '../backend/db.php';
     </div>
 </header>
 <div class="h-[50px]"></div>
+
+<div id="searchPopup" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center hidden z-50">
+    <div class="bg-white rounded-lg p-6 w-[90%] md:w-[600px]">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Résultats de recherche</h2>
+            <button id="closePopup" class="text-gray-500 hover:text-gray-700">&times;</button>
+        </div>
+        <div id="associationList" class="space-y-4">
+            <!-- Les résultats de recherche seront affichés ici -->
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("searchInput");
+        const searchPopup = document.getElementById("searchPopup");
+        const closePopup = document.getElementById("closePopup");
+        const associationList = document.getElementById("associationList");
+
+        let searchTimeout;
+
+        searchInput.addEventListener("input", function() {
+            clearTimeout(searchTimeout);
+            const query = searchInput.value;
+
+            searchTimeout = setTimeout(() => {
+                if (query.length >= 3) {
+                    fetch(`search_associations.php?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (Array.isArray(data) && data.length > 0) {
+                                associationList.innerHTML = "";
+                                data.forEach(association => {
+                                    const div = document.createElement('div');
+                                    div.classList.add('association-item', 'border-b', 'pb-2', 'mb-2');
+                                    div.innerHTML = `
+                                        <div class="association-card bg-gray-100 p-4 hover:bg-gray-200 cursor-pointer rounded">
+                                            <h3 class="text-lg font-semibold">${association.association_name}</h3>
+                                            <p class="text-sm text-gray-600">${association.association_desc}</p>
+                                            <p class="text-sm mt-2">Mission: ${association.association_mission}</p>
+                                        </div>
+                                    `;
+
+                                    div.addEventListener('click', () => {
+                                        window.location.href = `association.php?id=${association.association_id}`;
+                                    });
+
+                                    associationList.appendChild(div);
+                                });
+                                searchPopup.classList.remove('hidden');
+                            } else {
+                                associationList.innerHTML = "<p class='text-center py-4'>Aucune association trouvée.</p>";
+                                searchPopup.classList.remove('hidden');
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Erreur:", error);
+                        });
+                } else {
+                    searchPopup.classList.add('hidden');
+                }
+            }, 300); // Délai de 300ms pour éviter trop de requêtes
+        });
+
+        closePopup.addEventListener("click", function() {
+            searchPopup.classList.add('hidden');
+        });
+
+        // Fermer avec Echap
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                searchPopup.classList.add('hidden');
+            }
+        });
+
+        // Fermer en cliquant en dehors
+        searchPopup.addEventListener('click', function(e) {
+            if (e.target === searchPopup) {
+                searchPopup.classList.add('hidden');
+            }
+        });
+    });
+</script>
