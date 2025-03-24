@@ -12,6 +12,9 @@
         href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="frontend/assets/css/style.css">
+    <!-- CSS Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
 </head>
 
 <body>
@@ -27,7 +30,7 @@
         die("Aucune association sélectionnée.");
     }
     $association_id = $_SESSION['association_id'];
-    
+
     // Remplacez 0 par la valeur souhaitée
     $associationId = $association_id;
     $associationStatement->execute();
@@ -38,13 +41,16 @@
         $associationProfilePicture = htmlspecialchars($association['association_profile_picture']);
         $associationBackgroundImage = htmlspecialchars($association['association_background_image']);
         $associationName = htmlspecialchars($association['association_name']);
-        $associationAdress = htmlspecialchars($association['association_adress']);
+        $associationAdress = $association['association_adress'];
         $associationDesc = htmlspecialchars($association['association_desc']);
         $associationMission = htmlspecialchars($association['association_mission']);
     }
-
     // Fermer la requête
     $associationStatement->close();
+    $associationAdress = trim($associationAdress);
+
+    // Décodez la chaîne JSON
+    $decodedAddress = json_decode($associationAdress, true);
     ?>
 
     <div class="mainAssociationContainer flex flex-col">
@@ -64,32 +70,10 @@
                 </div>
                 <hr>
                 <div class="associationLocation flex gap-x-5">
-                    <div class="imageLocationContainer flex flex-col rounded-2xl shadow-lg">
+                    <div class="imageLocationContainer flex flex-col rounded-2xl shadow-lg w-2/2">
                         <img src="" alt="">
-                        <p><?php echo $associationAdress ?></p>
-                    <div id="map" style="height: 400px; width: 100%;"></div>
-                    <script>
-                        function initMap() {
-                            const geocoder = new google.maps.Geocoder();
-                            const address = "<?php echo $associationAdress; ?>";
-
-                            geocoder.geocode({ 'address': address }, function (results, status) {
-                                if (status === 'OK') {
-                                    const map = new google.maps.Map(document.getElementById('map'), {
-                                        zoom: 15,
-                                        center: results[0].geometry.location
-                                    });
-                                    new google.maps.Marker({
-                                        map: map,
-                                        position: results[0].geometry.location
-                                    });
-                                } else {
-                                    console.error('Geocode was not successful for the following reason: ' + status);
-                                }
-                            });
-                        }
-                    </script>
-                    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
+                        <div id="map" style="height: 400px; width: 100%;"></div>
+                        
                     </div>
                     <div class="buttonPostulateContainer">
                         <form id="postulationForm">
@@ -131,6 +115,8 @@
             </div>
         </div>
     </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         document.getElementById('postulationForm').addEventListener('submit', function (event) {
             event.preventDefault(); // Empêche le rechargement de la page
@@ -168,8 +154,6 @@
                         confirmationMessage.classList.add("text-green-600");
                     } else {
                         confirmationMessage.classList.add("text-red-600");
-
-
                     }
 
                     // Ferme la pop-up après 3 secondes
@@ -189,6 +173,34 @@
                 });
         });
     </script>
+    <script>
+        let associationName = "<?php echo $associationName; ?>";
+        document.addEventListener("DOMContentLoaded", function () {
+            // Récupérer les coordonnées dynamiquement passées par PHP
+            let associationData = <?php echo json_encode($decodedAddress, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+
+            if (associationData && associationData.coordinates && associationData.coordinates.length === 2) {
+                let lat = parseFloat(associationData.coordinates[1]); // Latitude
+                let lon = parseFloat(associationData.coordinates[0]); // Longitude
+
+                // Initialisation de la carte Leaflet
+                let map = L.map('map').setView([lat, lon], 13); // Zoom par défaut
+
+                // Ajouter la couche OpenStreetMap
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                // Ajouter un marqueur à la carte
+                L.marker([lat, lon]).addTo(map)
+                    .bindPopup('<b>' + associationName + '</b>')  // Affiche le nom de l'association
+                    .openPopup();
+            } else {
+                console.error("Erreur : Coordonnées invalides !");
+            }
+        });
+    </script>
+
 </body>
 
 </html>
