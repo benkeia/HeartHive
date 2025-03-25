@@ -139,6 +139,30 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
     .round-btn svg {
       stroke: #CF3275;
     }
+    /* Styles pour la popup de recadrage */
+#cropperModal {
+  backdrop-filter: blur(3px);
+  transition: opacity 0.3s ease;
+}
+
+#cropperModal > div {
+  max-height: 90vh;
+  transition: transform 0.3s ease;
+}
+
+.cropper-container {
+  margin: 0 auto;
+}
+
+/* Animation d'entrée et de sortie */
+#cropperModal.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#cropperModal.hidden > div {
+  transform: translateY(20px);
+}
   </style>
 </head>
 
@@ -283,38 +307,21 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
     </div>
     <div>
   <label for="profilePicInput" class="block text-gray-700 font-medium mb-2">Photo de Profil</label>
-  <input type="file" class="w-full bg-white border border-gray-300 rounded-lg p-3" id="profilePicInput" name="profile_picture" accept="image/*" style="display: none;">
-  <button type="button" id="selectImageBtn" class="gradient-btn mb-3">
-    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-    </svg>
-    Sélectionner une image
-  </button>
+  <input type="file" class="hidden" id="profilePicInput" name="profile_picture" accept="image/*">
   
-  <!-- Aperçu de l'image et zone de recadrage -->
-  <div id="cropperContainer" class="hidden mb-4">
-    <div class="mb-3">
-      <img id="cropperImage" class="max-w-full">
+  <div class="flex items-center space-x-4 mb-4">
+    <div class="relative">
+      <img id="previewImage" src="<?php echo $_SESSION['user_profile_picture'] ?>" class="w-24 h-24 rounded-full object-cover border-4 border-purple-100">
     </div>
-    <div class="flex space-x-2">
-      <button type="button" id="cropBtn" class="gradient-btn">
-        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-        Appliquer le recadrage
-      </button>
-      <button type="button" id="cancelCropBtn" class="bg-gray-100 text-gray-700 border border-gray-300 py-2.5 px-6 rounded-lg font-medium hover:bg-gray-200 transition">Annuler</button>
-    </div>
+    <button type="button" id="selectImageBtn" class="gradient-btn">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+      </svg>
+      Changer la photo
+    </button>
   </div>
-  
-  <!-- Aperçu de l'image recadrée -->
-  <div id="croppedPreview" class="hidden mb-4">
-    <div class="text-center mb-2">Aperçu:</div>
-    <div class="flex justify-center">
-      <img id="croppedImage" class="w-32 h-32 rounded-full object-cover border-4 border-purple-100">
-    </div>
-    <input type="hidden" id="croppedImageData" name="cropped_image">
-  </div>
+  <input type="hidden" id="croppedImageData" name="cropped_image">
+</div>
 </div>
     <div class="flex gap-3 mt-6">
       <button type="submit" class="gradient-btn">
@@ -380,7 +387,41 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
               </div>
             </div>
           </div>
-
+<!-- Popup de recadrage - version corrigée -->
+<div id="cropperModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden overflow-auto py-4">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl mx-4 flex flex-col max-h-[90vh]">
+    <!-- En-tête de la popup -->
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+      <h3 class="font-semibold text-lg text-gray-800">Recadrer votre photo de profil</h3>
+      <button id="closeModal" class="text-gray-400 hover:text-gray-500">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Corps de la popup avec défilement -->
+    <div class="p-6 overflow-auto flex-grow" style="max-height: calc(90vh - 160px);">
+      <div class="mb-6">
+        <img id="cropperImageModal" class="max-w-full mx-auto">
+      </div>
+      <p class="text-sm text-gray-500 mb-4 text-center">Faites glisser la zone de sélection pour recadrer votre image.</p>
+    </div>
+    
+    <!-- Pied de la popup (toujours visible) -->
+    <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end space-x-3 sticky bottom-0">
+      <button id="cancelCropBtnModal" class="bg-gray-100 text-gray-700 border border-gray-300 py-2 px-6 rounded-lg font-medium hover:bg-gray-200 transition">
+        Annuler
+      </button>
+      <button id="cropBtnModal" class="gradient-btn py-2 px-6">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Appliquer
+      </button>
+    </div>
+  </div>
+</div>
           <style>
             .tag {
               display: inline-flex;
@@ -518,16 +559,18 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
   </script>
   <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Éléments DOM
+  // Éléments DOM pour l'upload et le recadrage
   const profilePicInput = document.getElementById('profilePicInput');
   const selectImageBtn = document.getElementById('selectImageBtn');
-  const cropperContainer = document.getElementById('cropperContainer');
-  const cropperImage = document.getElementById('cropperImage');
-  const cropBtn = document.getElementById('cropBtn');
-  const cancelCropBtn = document.getElementById('cancelCropBtn');
-  const croppedPreview = document.getElementById('croppedPreview');
-  const croppedImage = document.getElementById('croppedImage');
+  const previewImage = document.getElementById('previewImage');
   const croppedImageData = document.getElementById('croppedImageData');
+  
+  // Éléments DOM pour la popup modale
+  const cropperModal = document.getElementById('cropperModal');
+  const cropperImageModal = document.getElementById('cropperImageModal');
+  const cropBtnModal = document.getElementById('cropBtnModal');
+  const cancelCropBtnModal = document.getElementById('cancelCropBtnModal');
+  const closeModal = document.getElementById('closeModal');
   
   // Variable pour stocker l'instance du cropper
   let cropper;
@@ -557,18 +600,29 @@ document.addEventListener('DOMContentLoaded', function() {
       // Créer un blob URL pour l'image
       const imageURL = URL.createObjectURL(file);
       
-      // Initialiser le cropper
-      cropperImage.src = imageURL;
-      cropperContainer.classList.remove('hidden');
-      croppedPreview.classList.add('hidden');
-      
-      // Détruire l'instance précédente si elle existe
-      if (cropper) {
-        cropper.destroy();
-      }
-      
-      // Créer une nouvelle instance de cropper
-      cropper = new Cropper(cropperImage, {
+      // Ouvrir la popup de recadrage
+      openCropperModal(imageURL);
+    });
+  }
+  
+  // Fonction pour ouvrir la popup de recadrage
+  function openCropperModal(imageURL) {
+    // Initialiser l'image dans la popup
+    cropperImageModal.src = imageURL;
+    
+    // Afficher la popup
+    cropperModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Empêcher le défilement de la page
+    
+    // Détruire l'instance précédente si elle existe
+    if (cropper) {
+      cropper.destroy();
+    }
+    
+    // Créer une nouvelle instance de cropper après un court délai
+    // pour s'assurer que l'image est chargée
+    setTimeout(() => {
+      cropper = new Cropper(cropperImageModal, {
         aspectRatio: 1, // Rapport carré pour photo de profil
         viewMode: 1,    // Restreindre la zone de recadrage à l'image
         guides: true,   // Afficher les guides
@@ -581,12 +635,37 @@ document.addEventListener('DOMContentLoaded', function() {
           // Le cropper est prêt
         }
       });
+    }, 100);
+  }
+  
+  // Fonction pour fermer la popup
+  function closeCropperModal() {
+    cropperModal.classList.add('hidden');
+    document.body.style.overflow = ''; // Rétablir le défilement de la page
+    
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+  }
+  
+  // Fermer la popup quand on clique sur le bouton Fermer
+  if (closeModal) {
+    closeModal.addEventListener('click', closeCropperModal);
+  }
+  
+  // Fermer la popup quand on clique sur Annuler
+  if (cancelCropBtnModal) {
+    cancelCropBtnModal.addEventListener('click', function() {
+      closeCropperModal();
+      // Réinitialiser l'input de fichier
+      profilePicInput.value = '';
     });
   }
   
-  // Appliquer le recadrage
-  if (cropBtn) {
-    cropBtn.addEventListener('click', function() {
+  // Appliquer le recadrage quand on clique sur Appliquer
+  if (cropBtnModal) {
+    cropBtnModal.addEventListener('click', function() {
       if (!cropper) return;
       
       // Récupérer l'image recadrée sous forme de canvas
@@ -603,33 +682,30 @@ document.addEventListener('DOMContentLoaded', function() {
       // Convertir le canvas en URL pour l'aperçu
       const croppedURL = canvas.toDataURL('image/jpeg', 0.9);
       
-      // Afficher l'aperçu
-      croppedImage.src = croppedURL;
+      // Mettre à jour l'aperçu et stocker l'image recadrée
+      previewImage.src = croppedURL;
       croppedImageData.value = croppedURL;
       
-      // Afficher l'aperçu et masquer le cropper
-      cropperContainer.classList.add('hidden');
-      croppedPreview.classList.remove('hidden');
-      
-      // Nettoyer
-      cropper.destroy();
-      cropper = null;
+      // Fermer la popup
+      closeCropperModal();
     });
   }
   
-  // Annuler le recadrage
-  if (cancelCropBtn) {
-    cancelCropBtn.addEventListener('click', function() {
-      if (cropper) {
-        cropper.destroy();
-        cropper = null;
-      }
-      
-      cropperContainer.classList.add('hidden');
-      // Réinitialiser l'input de fichier
-      profilePicInput.value = '';
-    });
-  }
+  // Fermer la popup si on clique en dehors
+  cropperModal.addEventListener('click', function(e) {
+    if (e.target === cropperModal) {
+      closeCropperModal();
+    }
+  });
+  
+  // Fermer la popup avec la touche Echap
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !cropperModal.classList.contains('hidden')) {
+      closeCropperModal();
+    }
+  });
+
+  // ... Reste de votre code JavaScript existant ...
 });
 
 
