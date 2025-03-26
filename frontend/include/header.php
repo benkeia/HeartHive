@@ -144,7 +144,7 @@ include '../backend/db.php';
                             Voir le profil
                         </div>
                     </a>
-                    <a href="messages.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <a href="profile.php?tab=messages" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                         <div class="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
                                 stroke="CurrentColor">
@@ -167,7 +167,7 @@ include '../backend/db.php';
                         </div>
                     </a>
                     <?php if ($_SESSION['type'] != 1): ?>
-                        <a href="certifications.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <a href="profile.php?tab=certifications" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             <div class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
                                     stroke="CurrentColor">
