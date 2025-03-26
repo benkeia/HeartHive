@@ -76,13 +76,13 @@ if (isset($_POST['association_id']) && isset($_SESSION['user_id'])) {
             // Envoyer la réponse avec les informations d'XP
             echo json_encode([
                 "status" => "success", 
-                "message" => "Inscription validée ✅",
+                "message" => "Vous suivez maintenant cette association ✅",
                 "xp_added" => $xp_added,
                 "xp_points" => $xp_added ? $xp_points : 0
             ]);
             
         } else {
-            echo json_encode(["status" => "error", "message" => "Erreur lors de l'inscription. ❌"]);
+            echo json_encode(["status" => "error", "message" => "Erreur lors du suivi de l'association. ❌"]);
         }
 
         $stmt->close();

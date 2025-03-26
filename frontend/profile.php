@@ -645,89 +645,370 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
 
       <!-- Section Engagements (initialement cachée) -->
       <!-- Section Engagements (initialement cachée) -->
-        <div id="engagementsTab" class="tab-content hidden">
-          <div class="bg-white rounded-xl shadow-custom p-6">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes engagements</h2>
+      <div id="engagementsTab" class="tab-content hidden">
+  <div class="bg-white rounded-xl shadow-custom p-6 mb-6">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes associations</h2>
 
-            <!-- Liste des associations -->
-            <div id="associationsList" class="space-y-6">
-              <?php
-              // Récupérer les engagements de l'utilisateur via la table postulation
-              $user_id = $_SESSION['user_id'];
+    <!-- Liste des associations -->
+    <!-- Liste des associations -->
+<div id="associationsList" class="space-y-6">
+  <?php
+  // Récupérer les engagements de l'utilisateur via la table postulation
+  $user_id = $_SESSION['user_id'];
 
-              // Utiliser les colonnes qui existent réellement dans votre table
-              $query = "SELECT a.*, p.postulation_id, p.postulation_date 
-                FROM association a 
-                JOIN postulation p ON a.association_id = p.postulation_association_id_fk 
-                WHERE p.postulation_user_id_fk = ? 
-                ORDER BY p.postulation_id DESC";
+  // Utiliser les colonnes qui existent réellement dans votre table
+  $query = "SELECT a.*, p.postulation_id, p.postulation_date 
+            FROM association a 
+            JOIN postulation p ON a.association_id = p.postulation_association_id_fk 
+            WHERE p.postulation_user_id_fk = ? 
+            ORDER BY p.postulation_id DESC";
 
-              try {
-                $stmt = $conn->prepare($query);
-                $stmt->bind_param("i", $user_id);
-                $stmt->execute();
-                $result = $stmt->get_result();
+  try {
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-                if ($result && $result->num_rows > 0) {
-                  while ($asso = $result->fetch_assoc()) {
-                    // Affichez vos données d'association
-                    ?>
-                    <div class="flex border border-gray-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
-                      <div class="w-1/4 bg-gradient-to-br from-purple-50 to-pink-50 p-4 flex items-center justify-center">
-                        <img src="<?php echo $asso['association_background_image'] ?>"
-                          alt="Logo <?php echo htmlspecialchars($asso['association_name']); ?>"
-                          class="w-80 h-80 object-contain">
-                      </div>
-                      <div class="w-3/4 p-4">
-                        <div class="flex justify-between items-start">
-                          <h3 class="text-lg font-semibold text-gray-800">
-                            <?php echo htmlspecialchars($asso['association_name']); ?>
-                          </h3>
-                          <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
-                            En attente
-                          </span>
-                        </div>
-                        <p class="text-gray-600 text-sm mt-2"><?php echo htmlspecialchars($asso['association_desc']); ?></p>
-                        <h3 class="text-gray-800 text-md mt-2">Mission</h3>
-                        <p class="text-gray-600 text-sm mt-2"><?php echo htmlspecialchars($asso['association_mission']); ?>
-                        </p>
-                        <div class="mt-4 flex justify-between items-center">
-                          <form id="viewForm_<?php echo $asso['association_id']; ?>" method="post" action="set_session.php"
-                            class="inline-block" style="display:inline;">
-                            <input type="hidden" name="association_id" value="<?php echo $asso['association_id']; ?>">
-                            <button type="button" onclick="submitAndRedirect(<?php echo $asso['association_id']; ?>)"
-                              class="gradient-btn py-1 px-4 text-sm">Voir détails</button>
-                          </form>
-                        </div>
-                      </div>
-                    </div>
-                    <?php
-                  }
-                } else {
+    if ($result && $result->num_rows > 0) {
+      while ($asso = $result->fetch_assoc()) {
+        // Formatage de la date
+        $postulationDate = new DateTime($asso['postulation_date']);
+        $formattedDate = $postulationDate->format('d M Y');
+        
+        // Affichez vos données d'association
+        ?>
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-gray-100 overflow-hidden">
+          <div class="flex flex-col md:flex-row">
+            <div class="md:w-1/4 bg-gradient-to-br from-purple-50 to-pink-50 p-4 flex items-center justify-center relative">
+              <img src="<?php echo $asso['association_background_image'] ?>"
+                alt="Logo <?php echo htmlspecialchars($asso['association_name']); ?>"
+                class="w-full h-32 md:h-full object-cover rounded-lg">
+              <div class="absolute top-2 right-2">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                  <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-purple-400" fill="currentColor" viewBox="0 0 8 8">
+                    <circle cx="4" cy="4" r="3" />
+                  </svg>
+                  Depuis le <?php echo $formattedDate; ?>
+                </span>
+              </div>
+            </div>
+            
+            <div class="md:w-3/4 p-4">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-800">
+                    <?php echo htmlspecialchars($asso['association_name']); ?>
+                  </h3>
+                  <?php if(isset($asso['association_address']) && !empty($asso['association_address'])): 
+                    $address = json_decode($asso['association_address'], true);
                   ?>
-                  <div class="text-center py-12 border border-dashed border-gray-300 rounded-lg bg-white">
-                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                      </path>
+                  <div class="flex items-center text-sm text-gray-500 mt-1">
+                    <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
-                    <h3 class="text-lg font-medium text-gray-600">Vous n'êtes pas encore engagé dans une association</h3>
-                    <p class="text-gray-500 mt-2 mb-6">Rejoignez une association pour commencer votre parcours bénévole</p>
-                    <a href="associations.php" class="gradient-btn py-2 px-6">
-                      Découvrir les associations
-                    </a>
+                    <?php echo isset($address['name']) ? htmlspecialchars($address['name']) : 'Adresse non spécifiée'; ?>
                   </div>
-                  <?php
-                }
-                $stmt->close();
-              } catch (Exception $e) {
-                echo '<div class="p-4 bg-red-50 text-red-700 rounded-lg">Erreur: ' . htmlspecialchars($e->getMessage()) . '</div>';
-              }
-              ?>
+                  <?php endif; ?>
+                </div>
+                
+                <button class="unfollow-btn text-sm text-gray-500 hover:text-red-500 transition-colors flex items-center" 
+                        data-association-id="<?php echo $asso['association_id']; ?>">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                  Ne plus suivre
+                </button>
+              </div>
+              
+              <div class="bg-gray-50 p-3 rounded-lg mb-3">
+                <h4 class="text-sm font-medium text-gray-700 mb-1">À propos</h4>
+                <p class="text-gray-600 text-sm line-clamp-2"><?php echo htmlspecialchars($asso['association_desc']); ?></p>
+              </div>
+              
+              <div class="bg-gray-50 p-3 rounded-lg mb-4">
+                <h4 class="text-sm font-medium text-gray-700 mb-1">Mission</h4>
+                <p class="text-gray-600 text-sm line-clamp-2"><?php echo htmlspecialchars($asso['association_mission']); ?></p>
+              </div>
+              
+              <div class="flex flex-wrap items-center justify-between pt-2 mt-2 border-t border-gray-100">
+                <div class="flex space-x-2">
+                  <?php if(!empty($asso['association_mail'])): ?>
+                  <a href="mailto:<?php echo htmlspecialchars($asso['association_mail']); ?>" 
+                     class="text-gray-500 hover:text-blue-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                  </a>
+                  <?php endif; ?>
+                  
+                  <?php if(!empty($asso['association_phone'])): ?>
+                  <a href="tel:<?php echo htmlspecialchars($asso['association_phone']); ?>" 
+                     class="text-gray-500 hover:text-green-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                    </svg>
+                  </a>
+                  <?php endif; ?>
+                </div>
+                
+                <div>
+                  <form id="viewForm_<?php echo $asso['association_id']; ?>" method="post" action="set_session.php"
+                    class="inline-block">
+                    <input type="hidden" name="association_id" value="<?php echo $asso['association_id']; ?>">
+                    <button type="button" onclick="submitAndRedirect(<?php echo $asso['association_id']; ?>)"
+                      class="gradient-btn py-1 px-4 text-sm">Voir détails</button>
+                  </form>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        <?php
+      }
+      
+      // Ajouter cette section de popup de confirmation pour le désabonnement
+      ?>
+      <div id="unfollowModal" class="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full mx-4">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Confirmer le désabonnement</h3>
+          <p class="text-gray-600 mb-6">Voulez-vous vraiment vous désabonner de cette association ? Vous ne recevrez plus de notifications concernant ses activités et missions.</p>
+          <div class="flex justify-end space-x-3">
+            <button id="cancelUnfollow" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+              Annuler
+            </button>
+            <button id="confirmUnfollow" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+              Confirmer
+            </button>
+          </div>
+          <input type="hidden" id="unfollowAssociationId" value="">
+        </div>
+      </div>
+      <?php
+    } else {
+      ?>
+      <div class="text-center py-12 border border-dashed border-gray-300 rounded-lg bg-white">
+        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+          </path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-600">Vous n'êtes pas encore engagé dans une association</h3>
+        <p class="text-gray-500 mt-2 mb-6">Rejoignez une association pour commencer votre parcours bénévole</p>
+        <a href="associations.php" class="gradient-btn py-2 px-6">
+          Découvrir les associations
+        </a>
+      </div>
+      <?php
+    }
+    $stmt->close();
+  } catch (Exception $e) {
+    echo '<div class="p-4 bg-red-50 text-red-700 rounded-lg">Erreur: ' . htmlspecialchars($e->getMessage()) . '</div>';
+  }
+  ?>
+</div>
+
+  <!-- Section des missions -->
+<div class="bg-white rounded-xl shadow-custom p-6">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes missions</h2>
+
+  <?php
+  // Vérifier d'abord si la table applications existe
+  $tableCheck = $conn->query("SHOW TABLES LIKE 'applications'");
+  $applicationsTableExists = $tableCheck->num_rows > 0;
+
+  if ($applicationsTableExists) {
+    try {
+      // Récupérer les missions auxquelles l'utilisateur est inscrit
+      // Correction de la requête SQL pour utiliser la structure correcte des tables
+      $missionsQuery = "
+        SELECT m.*, a.association_name, a.association_profile_picture, 
+               app.status, app.application_date, app.motivation
+        FROM applications app
+        JOIN missions m ON app.mission_id = m.mission_id
+        JOIN association a ON m.association_id = a.association_id
+        WHERE app.volunteer_id = ?
+        ORDER BY app.application_date DESC
+      ";
+
+      $stmt = $conn->prepare($missionsQuery);
+      $stmt->bind_param("i", $user_id);
+      $stmt->execute();
+      $missionsResult = $stmt->get_result();
+
+      if ($missionsResult && $missionsResult->num_rows > 0) {
+        ?>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <?php while ($mission = $missionsResult->fetch_assoc()) {
+            // Formater la date
+            $applicationDate = new DateTime($mission['application_date']);
+            $formattedDate = $applicationDate->format('d M Y');
+            
+            // Définir le statut visuel
+            $statusClass = 'bg-yellow-100 text-yellow-800';
+            $statusLabel = 'En attente';
+            
+            if ($mission['status'] === 'approved') {
+              $statusClass = 'bg-green-100 text-green-800';
+              $statusLabel = 'Approuvé';
+            } elseif ($mission['status'] === 'rejected') {
+              $statusClass = 'bg-red-100 text-red-800';
+              $statusLabel = 'Refusé';
+            } elseif ($mission['status'] === 'completed') {
+              $statusClass = 'bg-blue-100 text-blue-800';
+              $statusLabel = 'Terminé';
+            }
+            
+            // Vérifier si la mission est passée
+            $missionDate = isset($mission['mission_date']) ? new DateTime($mission['mission_date']) : new DateTime();
+            $now = new DateTime();
+            $isPast = $missionDate < $now;
+            ?>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300">
+              <?php if (!empty($mission['image_url'])): ?>
+              <div class="h-40 overflow-hidden relative">
+                <img src="<?php echo htmlspecialchars($mission['image_url']); ?>" 
+                     alt="<?php echo htmlspecialchars($mission['title']); ?>" 
+                     class="w-full h-full object-cover">
+                <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-black opacity-60"></div>
+                <div class="absolute bottom-3 left-3">
+                  <span class="px-2 py-1 text-xs rounded-full bg-white bg-opacity-90 text-gray-900 font-semibold">
+                    <?php echo $formattedDate; ?>
+                  </span>
+                </div>
+                <div class="absolute top-3 right-3">
+                  <span class="px-2 py-1 text-xs rounded-full <?php echo $statusClass; ?>">
+                    <?php echo $statusLabel; ?>
+                  </span>
+                </div>
+              </div>
+              <?php else: ?>
+              <div class="h-40 bg-gradient-to-r from-purple-100 to-pink-100 relative">
+                <div class="absolute top-3 right-3">
+                  <span class="px-2 py-1 text-xs rounded-full <?php echo $statusClass; ?>">
+                    <?php echo $statusLabel; ?>
+                  </span>
+                </div>
+                <div class="absolute bottom-3 left-3">
+                  <span class="px-2 py-1 text-xs rounded-full bg-white bg-opacity-90 text-gray-900 font-semibold">
+                    <?php echo $formattedDate; ?>
+                  </span>
+                </div>
+                <div class="flex items-center justify-center h-full">
+                  <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                  </svg>
+                </div>
+              </div>
+              <?php endif; ?>
+              
+              <div class="p-4">
+                <div class="flex items-center mb-3">
+                  <img src="<?php echo !empty($mission['association_profile_picture']) ? 
+                                  htmlspecialchars($mission['association_profile_picture']) : 
+                                  'assets/img/default-asso.png'; ?>" 
+                       alt="Logo" class="w-6 h-6 rounded-full mr-2">
+                  <span class="text-xs text-gray-600">
+                    <?php echo htmlspecialchars($mission['association_name']); ?>
+                  </span>
+                </div>
+                
+                <h3 class="text-lg font-bold text-gray-800 mb-2">
+                  <?php echo htmlspecialchars($mission['title']); ?>
+                </h3>
+                
+                <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+                  <?php echo htmlspecialchars($mission['description'] ?? 'Aucune description disponible'); ?>
+                </p>
+                
+                <?php if (!empty($mission['motivation'])): ?>
+                <div class="bg-gray-50 p-2 rounded-lg mb-3">
+                  <p class="text-xs text-gray-500 italic line-clamp-2">
+                    "<?php echo htmlspecialchars($mission['motivation']); ?>"
+                  </p>
+                </div>
+                <?php endif; ?>
+                
+                <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
+                  <?php if ($isPast): ?>
+                    <?php if ($mission['status'] == 'completed'): ?>
+                      <span class="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
+                        Mission terminée
+                      </span>
+                    <?php else: ?>
+                      <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
+                        Date passée
+                      </span>
+                    <?php endif; ?>
+                  <?php elseif (isset($mission['mission_date'])): ?>
+                    <?php 
+                    $daysRemaining = $now->diff($missionDate)->days;
+                    $timeLabel = $daysRemaining === 0 ? "Aujourd'hui" : "Dans $daysRemaining jours";
+                    ?>
+                    <span class="text-gray-600 text-xs">
+                      <?php echo $timeLabel; ?>
+                    </span>
+                  <?php else: ?>
+                    <span class="text-gray-600 text-xs">Date non spécifiée</span>
+                  <?php endif; ?>
+                  
+                  <a href="mission.php?id=<?php echo $mission['mission_id']; ?>" 
+                     class="text-primary hover:text-primary-dark text-sm font-medium transition-colors">
+                    Détails
+                  </a>
+                </div>
+              </div>
+            </div>
+          <?php } ?>
+        </div>
+      <?php
+      } else {
+        ?>
+        <div class="text-center py-12 border border-dashed border-gray-300 rounded-lg bg-white">
+          <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <h3 class="text-lg font-medium text-gray-600">Vous n'êtes inscrit à aucune mission</h3>
+          <p class="text-gray-500 mt-2 mb-6">Rejoignez une mission pour commencer votre engagement bénévole</p>
+          <a href="missions.php" class="gradient-btn py-2 px-6">
+            Découvrir les missions
+          </a>
+        </div>
+        <?php
+      }
+      $stmt->close();
+    } catch (Exception $e) {
+      echo '<div class="p-4 bg-red-50 text-red-700 rounded-lg">Erreur: ' . htmlspecialchars($e->getMessage()) . '</div>';
+    }
+  } else {
+    // Si la table applications n'existe pas, afficher un message approprié
+    ?>
+    <div class="text-center py-12 border border-dashed border-gray-300 rounded-lg bg-white">
+      <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+      </svg>
+      <h3 class="text-lg font-medium text-gray-600">Système de missions en développement</h3>
+      <p class="text-gray-500 mt-2 mb-6">Le système de candidature aux missions est en cours de développement. Revenez bientôt pour découvrir les nouvelles opportunités !</p>
+    </div>
+    <?php
+  }
+  ?>
+</div>
+</div>
+
+<style>
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>
 
         <!-- Autres sections pour les autres onglets (statistiques, certifications, etc.) -->
                   <!-- Contenu pour les statistiques -->
@@ -1690,7 +1971,76 @@ function showXPNotification(points, reason) {
   }, 4000);
 }
   </script>
-
+<!--Unfollow script-->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Éléments pour la modal de désabonnement
+    const unfollowModal = document.getElementById('unfollowModal');
+    const cancelUnfollow = document.getElementById('cancelUnfollow');
+    const confirmUnfollow = document.getElementById('confirmUnfollow');
+    const unfollowAssociationId = document.getElementById('unfollowAssociationId');
+    
+    // Gestionnaires d'événements pour les boutons "Ne plus suivre"
+    document.querySelectorAll('.unfollow-btn').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const associationId = this.getAttribute('data-association-id');
+        unfollowAssociationId.value = associationId;
+        unfollowModal.classList.remove('hidden');
+      });
+    });
+    
+    // Fermer la modal quand on clique sur Annuler
+    if (cancelUnfollow) {
+      cancelUnfollow.addEventListener('click', function() {
+        unfollowModal.classList.add('hidden');
+      });
+    }
+    
+    // Confirmer le désabonnement
+    if (confirmUnfollow) {
+      confirmUnfollow.addEventListener('click', function() {
+        const associationId = unfollowAssociationId.value;
+        if (!associationId) return;
+        
+        // Créer les données du formulaire
+        const formData = new FormData();
+        formData.append('association_id', associationId);
+        
+        // Envoyer la requête au serveur
+        fetch('unfollow_association.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            // Si succès, recharger la page
+            window.location.reload();
+          } else {
+            // Sinon, afficher l'erreur
+            alert('Erreur: ' + data.message);
+            unfollowModal.classList.add('hidden');
+          }
+        })
+        .catch(error => {
+          console.error('Erreur:', error);
+          alert('Une erreur est survenue lors du désabonnement');
+          unfollowModal.classList.add('hidden');
+        });
+      });
+    }
+    
+    // Fermer la modal si on clique en dehors
+    if (unfollowModal) {
+      unfollowModal.addEventListener('click', function(e) {
+        if (e.target === unfollowModal) {
+          unfollowModal.classList.add('hidden');
+        }
+      });
+    }
+  });
+</script>
 </body>
 
 </html>
