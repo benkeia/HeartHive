@@ -805,61 +805,268 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
   }
 </style>
 
-        <div id="certificationsTab" class="tab-content hidden">
-          <!-- Contenu pour les certifications -->
-          <?php
-// Récupérer les données d'XP de l'utilisateur
-$stmt = $conn->prepare("SELECT * FROM user_experience WHERE user_id = ?");
-$stmt->bind_param("i", $_SESSION['user_id']);
-$stmt->execute();
-$result = $stmt->get_result();
+<div id="certificationsTab" class="tab-content hidden">
+  <!-- Contenu pour les certifications -->
+  <?php
+  // Récupérer les données d'XP de l'utilisateur
+  $stmt = $conn->prepare("SELECT * FROM user_experience WHERE user_id = ?");
+  $stmt->bind_param("i", $_SESSION['user_id']);
+  $stmt->execute();
+  $result = $stmt->get_result();
 
-// Valeurs par défaut
-$xp_data = [
-    'total_points' => 0,
-    'current_level' => 1,
-    'points_to_next_level' => 100
-];
+  // Valeurs par défaut
+  $xp_data = [
+      'total_points' => 0,
+      'current_level' => 1,
+      'points_to_next_level' => 100
+  ];
 
-if ($result->num_rows > 0) {
-    $xp_data = $result->fetch_assoc();
-}
+  if ($result->num_rows > 0) {
+      $xp_data = $result->fetch_assoc();
+  }
 
-// Noms des niveaux
-$level_names = [
-    1 => "Bénévole Débutant",
-    2 => "Bénévole Actif",
-    3 => "Bénévole Engagé",
-    4 => "Bénévole Expérimenté",
-    5 => "Bénévole Expert",
-    // etc.
-];
+  // Noms des niveaux
+  $level_names = [
+      1 => "Bénévole Débutant",
+      2 => "Bénévole Actif",
+      3 => "Bénévole Engagé",
+      4 => "Bénévole Expérimenté",
+      5 => "Bénévole Expert",
+      6 => "Bénévole Maître",
+      7 => "Bénévole Émérite",
+      8 => "Bénévole Légendaire",
+      9 => "Bénévole Héroïque",
+      10 => "Bénévole Mythique"
+  ];
 
-// Calculer le pourcentage pour la barre de progression
-$prev_level_xp = 0; // XP minimale du niveau actuel
-$next_level_xp = $xp_data['points_to_next_level']; // XP minimale du niveau suivant
-$current_level_progress = ($xp_data['total_points'] - $prev_level_xp) / ($next_level_xp - $prev_level_xp) * 100;
-$current_level_progress = min(100, max(0, $current_level_progress)); // Limiter entre 0 et 100%
+  // Calculer le pourcentage pour la barre de progression
+  $prev_level_xp = 0; // XP minimale du niveau actuel
+  $next_level_xp = $xp_data['points_to_next_level']; // XP minimale du niveau suivant
+  $current_level_progress = ($xp_data['total_points'] - $prev_level_xp) / ($next_level_xp - $prev_level_xp) * 100;
+  $current_level_progress = min(100, max(0, $current_level_progress)); // Limiter entre 0 et 100%
 
-$level_name = isset($level_names[$xp_data['current_level']]) ? $level_names[$xp_data['current_level']] : "Niveau " . $xp_data['current_level'];
-$next_level_name = isset($level_names[$xp_data['current_level'] + 1]) ? $level_names[$xp_data['current_level'] + 1] : "Niveau " . ($xp_data['current_level'] + 1);
-?>
+  $level_name = isset($level_names[$xp_data['current_level']]) ? $level_names[$xp_data['current_level']] : "Niveau " . $xp_data['current_level'];
+  $next_level_name = isset($level_names[$xp_data['current_level'] + 1]) ? $level_names[$xp_data['current_level'] + 1] : "Niveau " . ($xp_data['current_level'] + 1);
+  ?>
 
-<!-- Dans la section "Récompenses" de votre HTML -->
-<div class="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-5 mb-8">
-  <div class="flex justify-between mb-3">
-    <h3 class="text-xl font-bold text-purple-900">Niveau <?= $xp_data['current_level'] ?>: <?= $level_name ?></h3>
-    <span class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full font-bold"><?= $xp_data['total_points'] ?> XP</span>
+  <div class="bg-white rounded-xl shadow-custom p-6 mb-6">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Niveau et progression</h2>
+    
+    <!-- Barre de progression (code existant) -->
+    <div class="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-5 mb-8">
+      <div class="flex justify-between mb-3">
+        <h3 class="text-xl font-bold text-purple-900">Niveau <?= $xp_data['current_level'] ?>: <?= $level_name ?></h3>
+        <span class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full font-bold"><?= $xp_data['total_points'] ?> XP</span>
+      </div>
+      <div class="w-full bg-white rounded-full h-4 overflow-hidden">
+        <div class="bg-gradient-to-r from-primary to-secondary h-full rounded-full" style="width: <?= $current_level_progress ?>%"></div>
+      </div>
+      <div class="flex justify-between mt-1 text-sm text-gray-700">
+        <span><?= $xp_data['total_points'] ?> / <?= $next_level_xp ?> XP pour le niveau <?= $xp_data['current_level'] + 1 ?></span>
+        <span>Prochain niveau: <?= $next_level_name ?></span>
+      </div>
+    </div>
+    
+    <!-- Ajouter cette section pour les badges -->
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes badges</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <?php
+      // Badges correspondant aux niveaux
+      $badges = [
+        1 => [
+          'name' => 'Bénévole Débutant',
+          'icon' => 'assets/icons/badges/level1.svg',
+          'description' => 'Premiers pas dans le monde du bénévolat'
+        ],
+        2 => [
+          'name' => 'Bénévole Actif',
+          'icon' => 'assets/icons/badges/level2.svg',
+          'description' => 'Vous êtes devenu un bénévole actif'
+        ],
+        3 => [
+          'name' => 'Bénévole Engagé',
+          'icon' => 'assets/icons/badges/level3.svg',
+          'description' => 'Vous démontrez un engagement sérieux'
+        ],
+        4 => [
+          'name' => 'Bénévole Expérimenté',
+          'icon' => 'assets/icons/badges/level4.svg',
+          'description' => 'Votre expérience commence à s\'accumuler'
+        ],
+        5 => [
+          'name' => 'Bénévole Expert',
+          'icon' => 'assets/icons/badges/level5.svg',
+          'description' => 'Vous êtes maintenant un expert du bénévolat'
+        ],
+        6 => [
+          'name' => 'Bénévole Maître',
+          'icon' => 'assets/icons/badges/level6.svg',
+          'description' => 'Vous maîtrisez l\'art du bénévolat'
+        ],
+        7 => [
+          'name' => 'Bénévole Émérite',
+          'icon' => 'assets/icons/badges/level7.svg',
+          'description' => 'Votre contribution est exemplaire'
+        ],
+        8 => [
+          'name' => 'Bénévole Légendaire',
+          'icon' => 'assets/icons/badges/level8.svg',
+          'description' => 'Votre impact est légendaire'
+        ],
+        9 => [
+          'name' => 'Bénévole Héroïque',
+          'icon' => 'assets/icons/badges/level9.svg',
+          'description' => 'Vous êtes un héros du bénévolat'
+        ],
+        10 => [
+          'name' => 'Bénévole Mythique',
+          'icon' => 'assets/icons/badges/level10.svg',
+          'description' => 'Vous avez atteint le statut mythique'
+        ],
+      ];
+
+      // Afficher les badges débloqués et les badges à venir
+      for ($i = 1; $i <= 10; $i++) {
+        $unlocked = $i <= $xp_data['current_level'];
+        // Utiliser une icône par défaut si le fichier n'existe pas encore
+        $icon = file_exists($_SERVER['DOCUMENT_ROOT'] . '/HeartHive/HeartHive/frontend/' . $badges[$i]['icon']) 
+                ? $badges[$i]['icon'] 
+                : 'https://api.dicebear.com/7.x/shapes/svg?seed=level' . $i;
+        ?>
+        <div class="badge-card bg-white rounded-lg overflow-hidden border <?= $unlocked ? 'border-purple-300' : 'border-gray-200' ?> transform transition-all duration-300 hover:shadow-lg <?= $unlocked ? 'hover:-translate-y-1' : 'opacity-50' ?>">
+          <div class="p-4 text-center">
+            <div class="relative w-24 h-24 mx-auto mb-3">
+              <img src="<?= $icon ?>" alt="Badge niveau <?= $i ?>" class="w-full h-full object-contain">
+              <?php if (!$unlocked) { ?>
+                <div class="absolute inset-0 bg-gray-200 bg-opacity-60 flex items-center justify-center rounded-full">
+                  <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                  </svg>
+                </div>
+              <?php } ?>
+            </div>
+            <h3 class="font-bold text-sm text-gray-800"><?= $badges[$i]['name'] ?></h3>
+            <p class="text-xs text-gray-500 mt-1"><?= $badges[$i]['description'] ?></p>
+            <?php if ($unlocked) { ?>
+              <span class="inline-block mt-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Débloqué</span>
+            <?php } else { ?>
+              <span class="inline-block mt-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">Niveau <?= $i ?> requis</span>
+            <?php } ?>
+          </div>
+        </div>
+        <?php
+      }
+      ?>
+    </div>
   </div>
-  <div class="w-full bg-white rounded-full h-4 overflow-hidden">
-    <div class="bg-gradient-to-r from-primary to-secondary h-full rounded-full" style="width: <?= $current_level_progress ?>%"></div>
-  </div>
-  <div class="flex justify-between mt-1 text-sm text-gray-700">
-    <span><?= $xp_data['total_points'] ?> / <?= $next_level_xp ?> XP pour le niveau <?= $xp_data['current_level'] + 1 ?></span>
-    <span>Prochain niveau: <?= $next_level_name ?></span>
+  
+  <!-- Autres réalisations -->
+  <div class="bg-white rounded-xl shadow-custom p-6">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Autres réalisations</h2>
+    <p class="text-gray-500">D'autres badges peuvent être débloqués en accomplissant diverses actions sur la plateforme.</p>
+    
+    <!-- Exemples d'autres types de badges -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
+      <?php
+      // Vérifier si le profil est complet
+      $user_id = $_SESSION['user_id'];
+      $hasBio = !empty($_SESSION['user_bio']) && strlen($_SESSION['user_bio']) > 10;
+      $hasLocation = isset($_SESSION['user_adress']) && $_SESSION['user_adress'] !== '';
+      $hasProfilePic = $_SESSION['user_profile_picture'] && !strpos($_SESSION['user_profile_picture'], 'default.webp');
+      $profileComplete = $hasBio && $hasLocation && $hasProfilePic;
+      
+      // Vérifier s'il a postulé à une association
+      $check_query = "SELECT COUNT(*) as count FROM postulation WHERE postulation_user_id_fk = ?";
+      $check_stmt = $conn->prepare($check_query);
+      $check_stmt->bind_param("i", $user_id);
+      $check_stmt->execute();
+      $result = $check_stmt->get_result();
+      $row = $result->fetch_assoc();
+      $hasApplied = $row['count'] > 0;
+      
+      // Exemples de badges spéciaux (à ajuster selon votre logique métier)
+      $special_badges = [
+        [
+          'name' => 'Premier engagement',
+          'icon' => 'https://api.dicebear.com/7.x/shapes/svg?seed=first_mission',
+          'description' => 'Vous avez rejoint votre première association',
+          'unlocked' => $hasApplied
+        ],
+        [
+          'name' => 'Profil complet',
+          'icon' => 'https://api.dicebear.com/7.x/shapes/svg?seed=complete_profile',
+          'description' => 'Vous avez complété toutes les informations de votre profil',
+          'unlocked' => $profileComplete
+        ],
+        [
+          'name' => 'Connexion régulière',
+          'icon' => 'https://api.dicebear.com/7.x/shapes/svg?seed=login_streak',
+          'description' => '7 jours de connexion consécutifs',
+          'unlocked' => false // À implémenter
+        ],
+        [
+          'name' => 'Première mission',
+          'icon' => 'https://api.dicebear.com/7.x/shapes/svg?seed=mission_complete',
+          'description' => 'Vous avez complété votre première mission',
+          'unlocked' => false // À implémenter
+        ]
+      ];
+
+      foreach ($special_badges as $badge) {
+        ?>
+        <div class="badge-card bg-white rounded-lg overflow-hidden border <?= $badge['unlocked'] ? 'border-purple-300' : 'border-gray-200' ?> transform transition-all duration-300 hover:shadow-lg <?= $badge['unlocked'] ? 'hover:-translate-y-1' : 'opacity-50' ?>">
+          <div class="p-4 text-center">
+            <div class="relative w-24 h-24 mx-auto mb-3">
+              <img src="<?= $badge['icon'] ?>" alt="<?= $badge['name'] ?>" class="w-full h-full object-contain">
+              <?php if (!$badge['unlocked']) { ?>
+                <div class="absolute inset-0 bg-gray-200 bg-opacity-60 flex items-center justify-center rounded-full">
+                  <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                  </svg>
+                </div>
+              <?php } ?>
+            </div>
+            <h3 class="font-bold text-sm text-gray-800"><?= $badge['name'] ?></h3>
+            <p class="text-xs text-gray-500 mt-1"><?= $badge['description'] ?></p>
+            <?php if ($badge['unlocked']) { ?>
+              <span class="inline-block mt-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Débloqué</span>
+            <?php } else { ?>
+              <span class="inline-block mt-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">Verrouillé</span>
+            <?php } ?>
+          </div>
+        </div>
+        <?php
+      }
+      ?>
+    </div>
   </div>
 </div>
-        </div>
+
+<style>
+  @keyframes badge-glow {
+    0%, 100% { box-shadow: 0 0 10px rgba(139, 92, 246, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.8); }
+  }
+
+  .badge-card.border-purple-300 {
+    transition: all 0.3s ease;
+  }
+
+  .badge-card.border-purple-300:hover {
+    animation: badge-glow 2s infinite;
+  }
+
+  /* Animation pour les nouveaux badges */
+  @keyframes badge-unlock {
+    0% { transform: scale(0.8); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .badge-unlock-animation {
+    animation: badge-unlock 1s forwards;
+  }
+</style>
 
         <div id="messagesTab" class="tab-content hidden">
           <!-- Contenu pour la messagerie -->
