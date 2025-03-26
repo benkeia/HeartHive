@@ -16,7 +16,26 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
 </head>
-
+<style>
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .mission-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .mission-card > div:last-child {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+</style>
 <body>
     <?php
     include '../backend/db.php';
@@ -91,9 +110,87 @@
             </div>
         </div>
         <div class="bottomAssociationContainer">
-            <div class="disponibilityContainer">
-
+        <div class="disponibilityContainer p-10">
+  <h2 class="text-3xl font-bold mb-6">Missions de l'association</h2>
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <?php
+    // Récupérer les missions de cette association
+    $missionsStmt = $conn->prepare("
+        SELECT mission_id, title, description, image_url, volunteers_needed, volunteers_registered, created_at, tags
+        FROM missions 
+        WHERE association_id = ?
+        ORDER BY created_at DESC
+    ");
+    
+    $missionsStmt->bind_param("i", $associationId);
+    $missionsStmt->execute();
+    $missionsResult = $missionsStmt->get_result();
+    
+    if ($missionsResult->num_rows > 0) {
+        while ($mission = $missionsResult->fetch_assoc()) {
+            // Traiter les tags s'ils existent
+            $tags = [];
+            if (!empty($mission['tags'])) {
+                $tags = json_decode($mission['tags'], true) ?: [];
+            }
+            
+            // Calculer les places restantes
+            $places_remaining = $mission['volunteers_needed'] - ($mission['volunteers_registered'] ?? 0);
+    ?>
+            <div class="mission-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <?php if (!empty($mission['image_url'])): ?>
+                <div class="h-48 overflow-hidden">
+                    <img src="<?php echo htmlspecialchars($mission['image_url']); ?>" alt="<?php echo htmlspecialchars($mission['title']); ?>" class="w-full h-full object-cover">
+                </div>
+                <?php endif; ?>
+                
+                <div class="p-5">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2"><?php echo htmlspecialchars($mission['title']); ?></h3>
+                    
+                    <?php if (!empty($tags)): ?>
+                    <div class="flex flex-wrap gap-1 mb-3">
+                        <?php foreach($tags as $tag): ?>
+                        <span class="bg-pink-100 text-pink-800 text-xs px-2 py-1 rounded-full">
+                            <?php echo htmlspecialchars($tag); ?>
+                        </span>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-3">
+                        <?php echo htmlspecialchars(substr($mission['description'], 0, 150)) . (strlen($mission['description']) > 150 ? '...' : ''); ?>
+                    </p>
+                    
+                    <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
+                        <div>
+                            <span class="text-sm font-medium <?php echo $places_remaining > 0 ? 'text-green-600' : 'text-red-600'; ?>">
+                                <?php echo $places_remaining; ?>/<?php echo $mission['volunteers_needed']; ?> places
+                            </span>
+                        </div>
+                        <a href="mission.php?id=<?php echo $mission['mission_id']; ?>" class="py-2 px-4 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg text-sm font-medium transition-colors">
+                            Détails
+                        </a>
+                    </div>
+                </div>
             </div>
+    <?php
+        }
+        $missionsStmt->close();
+    } else {
+    ?>
+        <div class="col-span-full text-center py-10">
+            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-600">Aucune mission disponible</h3>
+            <p class="text-gray-500 mt-2">Cette association n'a pas encore publié de missions.</p>
+        </div>
+    <?php
+    }
+    ?>
+  </div>
+</div>
         </div>
     </div>
     <!-- Pop-up -->
