@@ -192,6 +192,13 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
       font-size: 0.875rem;
       padding: 0.5rem 1rem;
     }
+
+    .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
   </style>
 </head>
 
@@ -650,165 +657,159 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
     <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes associations</h2>
 
     <!-- Liste des associations -->
-    <!-- Liste des associations -->
-<div id="associationsList" class="space-y-6">
-  <?php
-  // Récupérer les engagements de l'utilisateur via la table postulation
-  $user_id = $_SESSION['user_id'];
+<!-- Liste des associations -->
+<div id="associationsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <?php
+      // Récupérer les engagements de l'utilisateur via la table postulation
+      $user_id = $_SESSION['user_id'];
 
-  // Utiliser les colonnes qui existent réellement dans votre table
-  $query = "SELECT a.*, p.postulation_id, p.postulation_date 
-            FROM association a 
-            JOIN postulation p ON a.association_id = p.postulation_association_id_fk 
-            WHERE p.postulation_user_id_fk = ? 
-            ORDER BY p.postulation_id DESC";
+      // Utiliser les colonnes qui existent réellement dans votre table
+      $query = "SELECT a.*, p.postulation_id, p.postulation_date 
+                FROM association a 
+                JOIN postulation p ON a.association_id = p.postulation_association_id_fk 
+                WHERE p.postulation_user_id_fk = ? 
+                ORDER BY p.postulation_id DESC";
 
-  try {
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+      try {
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    if ($result && $result->num_rows > 0) {
-      while ($asso = $result->fetch_assoc()) {
-        // Formatage de la date
-        $postulationDate = new DateTime($asso['postulation_date']);
-        $formattedDate = $postulationDate->format('d M Y');
-        
-        // Affichez vos données d'association
-        ?>
-        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-gray-100 overflow-hidden">
-          <div class="flex flex-col md:flex-row">
-            <div class="md:w-1/4 bg-gradient-to-br from-purple-50 to-pink-50 p-4 flex items-center justify-center relative">
-              <img src="<?php echo $asso['association_background_image'] ?>"
-                alt="Logo <?php echo htmlspecialchars($asso['association_name']); ?>"
-                class="w-full h-32 md:h-full object-cover rounded-lg">
-              <div class="absolute top-2 right-2">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-purple-400" fill="currentColor" viewBox="0 0 8 8">
-                    <circle cx="4" cy="4" r="3" />
-                  </svg>
-                  Depuis le <?php echo $formattedDate; ?>
-                </span>
-              </div>
-            </div>
-            
-            <div class="md:w-3/4 p-4">
-              <div class="flex justify-between items-start mb-3">
-                <div>
-                  <h3 class="text-lg font-semibold text-gray-800">
-                    <?php echo htmlspecialchars($asso['association_name']); ?>
-                  </h3>
-                  <?php if(isset($asso['association_address']) && !empty($asso['association_address'])): 
-                    $address = json_decode($asso['association_address'], true);
-                  ?>
-                  <div class="flex items-center text-sm text-gray-500 mt-1">
-                    <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                    <?php echo isset($address['name']) ? htmlspecialchars($address['name']) : 'Adresse non spécifiée'; ?>
-                  </div>
-                  <?php endif; ?>
-                </div>
-                
-                <button class="unfollow-btn text-sm text-gray-500 hover:text-red-500 transition-colors flex items-center" 
-                        data-association-id="<?php echo $asso['association_id']; ?>">
-                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
-                  Ne plus suivre
-                </button>
-              </div>
-              
-              <div class="bg-gray-50 p-3 rounded-lg mb-3">
-                <h4 class="text-sm font-medium text-gray-700 mb-1">À propos</h4>
-                <p class="text-gray-600 text-sm line-clamp-2"><?php echo htmlspecialchars($asso['association_desc']); ?></p>
-              </div>
-              
-              <div class="bg-gray-50 p-3 rounded-lg mb-4">
-                <h4 class="text-sm font-medium text-gray-700 mb-1">Mission</h4>
-                <p class="text-gray-600 text-sm line-clamp-2"><?php echo htmlspecialchars($asso['association_mission']); ?></p>
-              </div>
-              
-              <div class="flex flex-wrap items-center justify-between pt-2 mt-2 border-t border-gray-100">
-                <div class="flex space-x-2">
-                  <?php if(!empty($asso['association_mail'])): ?>
-                  <a href="mailto:<?php echo htmlspecialchars($asso['association_mail']); ?>" 
-                     class="text-gray-500 hover:text-blue-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
-                  </a>
-                  <?php endif; ?>
-                  
-                  <?php if(!empty($asso['association_phone'])): ?>
-                  <a href="tel:<?php echo htmlspecialchars($asso['association_phone']); ?>" 
-                     class="text-gray-500 hover:text-green-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                    </svg>
-                  </a>
-                  <?php endif; ?>
-                </div>
-                
-                <div>
-                  <form id="viewForm_<?php echo $asso['association_id']; ?>" method="post" action="set_session.php"
-                    class="inline-block">
-                    <input type="hidden" name="association_id" value="<?php echo $asso['association_id']; ?>">
-                    <button type="button" onclick="submitAndRedirect(<?php echo $asso['association_id']; ?>)"
-                      class="gradient-btn py-1 px-4 text-sm">Voir détails</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <?php
-      }
+        if ($result && $result->num_rows > 0) {
+          while ($asso = $result->fetch_assoc()) {
+            // Affichez vos données d'association
+            ?>
+
+
+
+
+            <div class="flex flex-col border border-gray-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
+  <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-4 h-40 relative">
+    <img src="<?php echo $asso['association_background_image'] ?>"
+      alt="Logo <?php echo htmlspecialchars($asso['association_name']); ?>"
+      class="w-full h-full object-cover rounded-lg">
       
-      // Ajouter cette section de popup de confirmation pour le désabonnement
-      ?>
-      <div id="unfollowModal" class="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full mx-4">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Confirmer le désabonnement</h3>
-          <p class="text-gray-600 mb-6">Voulez-vous vraiment vous désabonner de cette association ? Vous ne recevrez plus de notifications concernant ses activités et missions.</p>
-          <div class="flex justify-end space-x-3">
-            <button id="cancelUnfollow" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-              Annuler
-            </button>
-            <button id="confirmUnfollow" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-              Confirmer
-            </button>
-          </div>
-          <input type="hidden" id="unfollowAssociationId" value="">
-        </div>
-      </div>
-      <?php
-    } else {
-      ?>
-      <div class="text-center py-12 border border-dashed border-gray-300 rounded-lg bg-white">
-        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-          </path>
+    <!-- Badge de date d'abonnement -->
+    <?php 
+      $postulationDate = new DateTime($asso['postulation_date']);
+      $formattedDate = $postulationDate->format('d M Y');
+    ?>
+    <div class="absolute bottom-3 left-3">
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-90 text-gray-800">
+        <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-purple-400" fill="currentColor" viewBox="0 0 8 8">
+          <circle cx="4" cy="4" r="3" />
         </svg>
-        <h3 class="text-lg font-medium text-gray-600">Vous n'êtes pas encore engagé dans une association</h3>
-        <p class="text-gray-500 mt-2 mb-6">Rejoignez une association pour commencer votre parcours bénévole</p>
-        <a href="associations.php" class="gradient-btn py-2 px-6">
-          Découvrir les associations
+        Depuis le <?php echo $formattedDate; ?>
+      </span>
+    </div>
+  </div>
+  
+  <div class="p-4">
+    <div class="flex justify-between items-start mb-3">
+      <h3 class="text-lg font-semibold text-gray-800">
+        <?php echo htmlspecialchars($asso['association_name']); ?>
+      </h3>
+      
+      <!-- Bouton pour se désabonner -->
+      <button class="unfollow-btn text-sm text-gray-500 hover:text-red-500 transition-colors flex items-center" 
+              data-association-id="<?php echo $asso['association_id']; ?>">
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        Ne plus suivre
+      </button>
+    </div>
+    
+    <!-- Adresse de l'association -->
+    <?php if(isset($asso['association_adress']) && !empty($asso['association_adress'])): 
+      $address = json_decode($asso['association_adress'], true);
+    ?>
+    <div class="flex items-center text-sm text-gray-500 mb-3">
+      <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+      </svg>
+      <?php echo isset($address['name']) ? htmlspecialchars($address['name']) : 'Adresse non spécifiée'; ?>
+    </div>
+    <?php endif; ?>
+    
+    <!-- Description -->
+    <div class="bg-gray-50 p-3 rounded-lg mb-3">
+      <p class="text-gray-600 text-sm line-clamp-2"><?php echo htmlspecialchars($asso['association_desc']); ?></p>
+    </div>
+    
+    <!-- Mission -->
+    <div class="bg-gray-50 p-3 rounded-lg mb-4">
+      <h4 class="text-sm font-medium text-gray-700 mb-1">Mission</h4>
+      <p class="text-gray-600 text-sm line-clamp-2"><?php echo htmlspecialchars($asso['association_mission']); ?></p>
+    </div>
+    
+    <!-- Boutons d'action -->
+    <div class="flex justify-between items-center pt-2 mt-2 border-t border-gray-100">
+      <div class="flex space-x-2">
+        <?php if(!empty($asso['association_mail'])): ?>
+        <a href="mailto:<?php echo htmlspecialchars($asso['association_mail']); ?>" 
+           class="text-gray-500 hover:text-blue-600 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
         </a>
+        <?php endif; ?>
       </div>
-      <?php
-    }
-    $stmt->close();
-  } catch (Exception $e) {
-    echo '<div class="p-4 bg-red-50 text-red-700 rounded-lg">Erreur: ' . htmlspecialchars($e->getMessage()) . '</div>';
-  }
-  ?>
+      
+      <form id="viewForm_<?php echo $asso['association_id']; ?>" method="post" action="set_session.php" class="inline-block">
+        <input type="hidden" name="association_id" value="<?php echo $asso['association_id']; ?>">
+        <button type="button" onclick="submitAndRedirect(<?php echo $asso['association_id']; ?>)"
+          class="gradient-btn py-1 px-4 text-sm">Voir détails</button>
+      </form>
+    </div>
+  </div>
 </div>
-
+            <?php
+          }
+        } else {
+          ?>
+          <div class="text-center py-12 border border-dashed border-gray-300 rounded-lg bg-white">
+            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+              </path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-600">Vous n'êtes pas encore engagé dans une association</h3>
+            <p class="text-gray-500 mt-2 mb-6">Rejoignez une association pour commencer votre parcours bénévole</p>
+            <a href="associations.php" class="gradient-btn py-2 px-6">
+              Découvrir les associations
+            </a>
+          </div>
+          <?php
+        }
+        $stmt->close();
+      } catch (Exception $e) {
+        echo '<div class="p-4 bg-red-50 text-red-700 rounded-lg">Erreur: ' . htmlspecialchars($e->getMessage()) . '</div>';
+      }
+      ?>
+    </div>
+  </div>
+<?php
+// Ajouter cette section de popup de confirmation pour le désabonnement après la boucle des associations
+?>
+<div id="unfollowModal" class="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full mx-4">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Confirmer le désabonnement</h3>
+    <p class="text-gray-600 mb-6">Voulez-vous vraiment vous désabonner de cette association ? Vous ne recevrez plus de notifications concernant ses activités et missions.</p>
+    <div class="flex justify-end space-x-3">
+      <button id="cancelUnfollow" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+        Annuler
+      </button>
+      <button id="confirmUnfollow" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+        Confirmer
+      </button>
+    </div>
+    <input type="hidden" id="unfollowAssociationId" value="">
+  </div>
+</div>
   <!-- Section des missions -->
 <div class="bg-white rounded-xl shadow-custom p-6">
   <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes missions</h2>
@@ -1971,7 +1972,7 @@ function showXPNotification(points, reason) {
   }, 4000);
 }
   </script>
-<!--Unfollow script-->
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Éléments pour la modal de désabonnement
