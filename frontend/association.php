@@ -23,32 +23,32 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
-    
+
     .mission-card {
         display: flex;
         flex-direction: column;
         height: 100%;
     }
-    
-    .mission-card > div:last-child {
+
+    .mission-card>div:last-child {
         display: flex;
         flex-direction: column;
         flex-grow: 1;
     }
-    
+
     .hero-section {
         position: relative;
         height: 400px;
         overflow: hidden;
         border-radius: 0 0 2rem 2rem;
     }
-    
+
     .hero-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.7));
     }
-    
+
     .hero-content {
         position: absolute;
         bottom: 0;
@@ -57,37 +57,37 @@
         padding: 2rem;
         color: white;
     }
-    
+
     .profile-picture {
         border: 4px solid white;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-    
+
     .follow-btn {
         transition: all 0.3s ease;
     }
-    
+
     .follow-btn:hover {
         transform: translateY(-2px);
     }
-    
+
     .follow-btn:active {
         transform: translateY(0);
     }
-    
+
     .stats-card {
         transition: all 0.3s ease;
     }
-    
+
     .stats-card:hover {
         transform: translateY(-5px);
     }
-    
+
     .tab-active {
         color: #4a6cf7;
         border-bottom: 2px solid #4a6cf7;
     }
-    
+
     .xp-notification {
         position: fixed;
         top: 20px;
@@ -103,11 +103,11 @@
         z-index: 1000;
         box-shadow: 0 4px 12px rgba(74, 108, 247, 0.2);
     }
-    
+
     .xp-notification.show {
         transform: translateX(0);
     }
-    
+
     .xp-notification .icon {
         background: rgba(255, 255, 255, 0.2);
         width: 32px;
@@ -120,12 +120,12 @@
         font-weight: bold;
         font-size: 18px;
     }
-    
+
     .xp-notification .points {
         font-weight: bold;
         font-size: 16px;
     }
-    
+
     .xp-notification .reason {
         font-size: 12px;
         opacity: 0.9;
@@ -141,19 +141,19 @@
     $associationStatement = $conn->prepare("SELECT * FROM association WHERE association_id = ?");
     $associationStatement->bind_param("i", $associationId);
 
-    if (!isset($_SESSION['association_id'])) {
-        die("Aucune association sélectionnée.");
+    // Remplacer cette partie
+    if (!isset($_GET['id'])) {
+        die("Aucune association sélectionnée. Veuillez préciser un ID d'association.");
     }
-    $association_id = $_SESSION['association_id'];
-
-    // Remplacez 0 par la valeur souhaitée
+    $association_id = (int)$_GET['id'];
     $associationId = $association_id;
+
     $associationStatement->execute();
 
     // Récupération des résultats
     $result = $associationStatement->get_result();
     $association = null;
-    
+
     if ($result->num_rows > 0) {
         $association = $result->fetch_assoc();
         $associationProfilePicture = htmlspecialchars($association['association_profile_picture']);
@@ -166,28 +166,28 @@
     } else {
         die("Association non trouvée.");
     }
-    
+
     // Fermer la requête
     $associationStatement->close();
-    
+
     // Décodez la chaîne JSON d'adresse
     $decodedAddress = null;
     if (!empty($associationAdress)) {
         $associationAdress = trim($associationAdress);
         $decodedAddress = json_decode($associationAdress, true);
     }
-    
+
     // Vérifier si l'utilisateur suit déjà cette association
     $isFollowing = false;
     $followButtonText = "Suivre l'association";
     $followButtonClass = "bg-blue-600 hover:bg-blue-700 text-white";
-    
+
     if (isset($_SESSION['user_id'])) {
         $checkFollowStmt = $conn->prepare("SELECT * FROM postulation WHERE postulation_user_id_fk = ? AND postulation_association_id_fk = ?");
         $checkFollowStmt->bind_param("ii", $_SESSION['user_id'], $associationId);
         $checkFollowStmt->execute();
         $followResult = $checkFollowStmt->get_result();
-        
+
         if ($followResult->num_rows > 0) {
             $isFollowing = true;
             $followButtonText = "Ne plus suivre";
@@ -195,14 +195,14 @@
         }
         $checkFollowStmt->close();
     }
-    
+
     // Compter le nombre de followers
     $followersStmt = $conn->prepare("SELECT COUNT(*) as count FROM postulation WHERE postulation_association_id_fk = ?");
     $followersStmt->bind_param("i", $associationId);
     $followersStmt->execute();
     $followersCount = $followersStmt->get_result()->fetch_assoc()['count'];
     $followersStmt->close();
-    
+
     // Compter le nombre de missions
     $missionsCountStmt = $conn->prepare("SELECT COUNT(*) as count FROM missions WHERE association_id = ?");
     $missionsCountStmt->bind_param("i", $associationId);
@@ -227,7 +227,7 @@
                 </div>
             </div>
         </section>
-        
+
         <div class="container mx-auto px-4 -mt-6 relative z-10">
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -242,7 +242,7 @@
                         <p class="text-sm text-gray-500">Abonnés</p>
                     </div>
                 </div>
-                
+
                 <div class="stats-card bg-white p-6 rounded-xl shadow-sm flex items-center">
                     <div class="p-3 rounded-full bg-purple-50 mr-4">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -254,7 +254,7 @@
                         <p class="text-sm text-gray-500">Missions proposées</p>
                     </div>
                 </div>
-                
+
                 <div class="stats-card bg-white p-6 rounded-xl shadow-sm">
                     <form id="followForm" class="flex flex-col h-full justify-center items-center">
                         <input type="hidden" name="association_id" value="<?php echo $associationId; ?>">
@@ -263,14 +263,14 @@
                             <?php echo $followButtonText; ?>
                         </button>
                         <p class="text-xs text-gray-500 mt-2 text-center">
-                            <?php echo $isFollowing ? 
-                                "Vous suivez cette association et recevrez ses actualités" : 
+                            <?php echo $isFollowing ?
+                                "Vous suivez cette association et recevrez ses actualités" :
                                 "Suivez cette association pour être informé de ses nouvelles missions"; ?>
                         </p>
                     </form>
                 </div>
             </div>
-            
+
             <!-- Association Info with Tabs -->
             <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
                 <div class="border-b border-gray-200">
@@ -280,29 +280,29 @@
                         <button class="tab-btn px-6 py-4 text-sm font-medium text-gray-500" data-tab="contact">Contact</button>
                     </div>
                 </div>
-                
+
                 <div class="p-6">
                     <div id="about-tab" class="tab-content">
                         <h2 class="text-2xl font-bold text-gray-800 mb-4">Présentation</h2>
                         <p class="text-gray-600 mb-6"><?php echo $associationDesc ?></p>
-                        
+
                         <h2 class="text-2xl font-bold text-gray-800 mb-4">Notre mission</h2>
                         <p class="text-gray-600"><?php echo $associationMission ?></p>
                     </div>
-                    
+
                     <div id="location-tab" class="tab-content hidden">
                         <h2 class="text-2xl font-bold text-gray-800 mb-4">Où nous trouver</h2>
                         <div class="rounded-xl overflow-hidden shadow-md h-[400px]">
                             <div id="map" class="w-full h-full"></div>
                         </div>
                     </div>
-                    
+
                     <div id="contact-tab" class="tab-content hidden">
                         <h2 class="text-2xl font-bold text-gray-800 mb-4">Nous contacter</h2>
                         <div class="bg-blue-50 p-4 rounded-lg mb-6">
                             <p class="text-blue-700">Vous pouvez entrer en contact avec l'association via les coordonnées ci-dessous.</p>
                         </div>
-                        
+
                         <div class="space-y-4">
                             <div class="flex items-start">
                                 <div class="flex-shrink-0 h-6 w-6 text-blue-500 mt-1">
@@ -315,7 +315,7 @@
                                     <p class="text-sm text-gray-500"><?php echo !empty($associationMail) ? htmlspecialchars($associationMail) : 'Non renseigné'; ?></p>
                                 </div>
                             </div>
-                            
+
                             <div class="flex items-start">
                                 <div class="flex-shrink-0 h-6 w-6 text-blue-500 mt-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -334,7 +334,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Missions Section -->
             <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div class="p-6 border-b border-gray-200">
@@ -345,7 +345,7 @@
                         </span>
                     </div>
                 </div>
-                
+
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <?php
@@ -356,11 +356,11 @@
                             WHERE association_id = ?
                             ORDER BY created_at DESC
                         ");
-                        
+
                         $missionsStmt->bind_param("i", $associationId);
                         $missionsStmt->execute();
                         $missionsResult = $missionsStmt->get_result();
-                        
+
                         if ($missionsResult->num_rows > 0) {
                             while ($mission = $missionsResult->fetch_assoc()) {
                                 // Traiter les tags s'ils existent
@@ -368,56 +368,56 @@
                                 if (!empty($mission['tags'])) {
                                     $tags = json_decode($mission['tags'], true) ?: [];
                                 }
-                                
+
                                 // Calculer les places restantes
                                 $places_remaining = $mission['volunteers_needed'] - ($mission['volunteers_registered'] ?? 0);
                         ?>
                                 <div class="mission-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100">
                                     <?php if (!empty($mission['image_url'])): ?>
-                                    <div class="h-48 overflow-hidden">
-                                        <img src="<?php echo htmlspecialchars($mission['image_url']); ?>" alt="<?php echo htmlspecialchars($mission['title']); ?>" class="w-full h-full object-cover">
-                                    </div>
+                                        <div class="h-48 overflow-hidden">
+                                            <img src="<?php echo htmlspecialchars($mission['image_url']); ?>" alt="<?php echo htmlspecialchars($mission['title']); ?>" class="w-full h-full object-cover">
+                                        </div>
                                     <?php else: ?>
-                                    <div class="h-48 bg-gradient-to-r from-blue-50 to-indigo-50 flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                        </svg>
-                                    </div>
+                                        <div class="h-48 bg-gradient-to-r from-blue-50 to-indigo-50 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                            </svg>
+                                        </div>
                                     <?php endif; ?>
-                                    
+
                                     <div class="p-5">
                                         <h3 class="text-xl font-semibold text-gray-800 mb-2"><?php echo htmlspecialchars($mission['title']); ?></h3>
-                                        
+
                                         <?php if (!empty($tags)): ?>
-                                        <div class="flex flex-wrap gap-1 mb-3">
-                                            <?php foreach($tags as $tag): ?>
-                                            <span class="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">
-                                                <?php echo htmlspecialchars($tag); ?>
-                                            </span>
-                                            <?php endforeach; ?>
-                                        </div>
+                                            <div class="flex flex-wrap gap-1 mb-3">
+                                                <?php foreach ($tags as $tag): ?>
+                                                    <span class="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">
+                                                        <?php echo htmlspecialchars($tag); ?>
+                                                    </span>
+                                                <?php endforeach; ?>
+                                            </div>
                                         <?php endif; ?>
-                                        
+
                                         <p class="text-gray-600 text-sm mb-4 line-clamp-3">
                                             <?php echo htmlspecialchars(substr($mission['description'], 0, 150)) . (strlen($mission['description']) > 150 ? '...' : ''); ?>
                                         </p>
-                                        
+
                                         <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
                                             <div>
                                                 <?php if ($places_remaining > 0): ?>
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8">
-                                                        <circle cx="4" cy="4" r="3" />
-                                                    </svg>
-                                                    <?php echo $places_remaining; ?> place<?php echo $places_remaining > 1 ? 's' : ''; ?>
-                                                </span>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8">
+                                                            <circle cx="4" cy="4" r="3" />
+                                                        </svg>
+                                                        <?php echo $places_remaining; ?> place<?php echo $places_remaining > 1 ? 's' : ''; ?>
+                                                    </span>
                                                 <?php else: ?>
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8">
-                                                        <circle cx="4" cy="4" r="3" />
-                                                    </svg>
-                                                    Complet
-                                                </span>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                        <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8">
+                                                            <circle cx="4" cy="4" r="3" />
+                                                        </svg>
+                                                        Complet
+                                                    </span>
                                                 <?php endif; ?>
                                             </div>
                                             <a href="mission.php?id=<?php echo $mission['mission_id']; ?>" class="inline-flex items-center py-2 px-3 text-sm font-medium rounded-lg text-blue-700 hover:bg-blue-50 transition-colors">
@@ -429,11 +429,11 @@
                                         </div>
                                     </div>
                                 </div>
-                        <?php
+                            <?php
                             }
                             $missionsStmt->close();
                         } else {
-                        ?>
+                            ?>
                             <div class="col-span-full text-center py-10">
                                 <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
@@ -450,20 +450,20 @@
         </div>
     </main>
 
-   <!-- Pop-up -->
-<div id="popup" class="fixed inset-0 flex items-center justify-center bg-black/50 bg-opacity-50 hidden z-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-        <div id="loading" class="flex flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-            <span class="text-gray-700 font-medium">Traitement en cours...</span>
-        </div>
-        <div id="confirmation" class="hidden">
-            <p id="confirmationMessage" class="font-bold"></p>
-            <button id="closePop"
-                class="mt-4 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-colors">Fermer</button>
+    <!-- Pop-up -->
+    <div id="popup" class="fixed inset-0 flex items-center justify-center bg-black/50 bg-opacity-50 hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+            <div id="loading" class="flex flex-col items-center justify-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                <span class="text-gray-700 font-medium">Traitement en cours...</span>
+            </div>
+            <div id="confirmation" class="hidden">
+                <p id="confirmationMessage" class="font-bold"></p>
+                <button id="closePop"
+                    class="mt-4 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-colors">Fermer</button>
+            </div>
         </div>
     </div>
-</div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
@@ -471,7 +471,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const tabBtns = document.querySelectorAll('.tab-btn');
             const tabContents = document.querySelectorAll('.tab-content');
-            
+
             tabBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
                     // Retirer la classe active de tous les boutons
@@ -479,83 +479,83 @@
                         b.classList.remove('tab-active');
                         b.classList.add('text-gray-500');
                     });
-                    
+
                     // Ajouter la classe active au bouton cliqué
                     this.classList.add('tab-active');
                     this.classList.remove('text-gray-500');
-                    
+
                     // Cacher tous les contenus
                     tabContents.forEach(content => {
                         content.classList.add('hidden');
                     });
-                    
+
                     // Afficher le contenu correspondant
                     const tabId = this.getAttribute('data-tab');
                     document.getElementById(tabId + '-tab').classList.remove('hidden');
-                    
+
                     // Initialiser la carte si on passe à l'onglet localisation
                     if (tabId === 'location') {
                         initMap();
                     }
                 });
             });
-            
+
             // Gestionnaire pour le suivi/désabonnement
             document.getElementById('followForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                
+
                 const formData = new FormData(this);
-                
+
                 // Mettre à jour l'URL pour refléter l'action de suivi plutôt que de postulation
                 const url = formData.get('action') === 'follow' ? 'postulate.php' : 'unfollow_association.php';
-                
+
                 // Afficher la popup de chargement
                 const popup = document.getElementById('popup');
                 const loading = document.getElementById('loading');
                 const confirmation = document.getElementById('confirmation');
                 const confirmationMessage = document.getElementById('confirmationMessage');
-                
+
                 // Afficher la popup avec l'animation de chargement
                 popup.classList.remove('hidden');
                 loading.classList.remove('hidden');
                 confirmation.classList.add('hidden');
-                
+
                 fetch(url, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Cacher le loading, afficher la confirmation
-                    loading.classList.add('hidden');
-                    confirmation.classList.remove('hidden');
-                    
-                    if (data.status === 'success') {
-                        // Définir le message de confirmation
-                        confirmationMessage.textContent = data.message;
-                        confirmationMessage.className = "font-bold text-green-600";
-                        
-                        // Si XP ajouté, afficher la notification
-                        if (data.xp_added && data.xp_points > 0) {
-                            showXPNotification(data.xp_points, data.action === 'follow' ? "Association suivie!" : "Désabonnement effectué");
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Cacher le loading, afficher la confirmation
+                        loading.classList.add('hidden');
+                        confirmation.classList.remove('hidden');
+
+                        if (data.status === 'success') {
+                            // Définir le message de confirmation
+                            confirmationMessage.textContent = data.message;
+                            confirmationMessage.className = "font-bold text-green-600";
+
+                            // Si XP ajouté, afficher la notification
+                            if (data.xp_added && data.xp_points > 0) {
+                                showXPNotification(data.xp_points, data.action === 'follow' ? "Association suivie!" : "Désabonnement effectué");
+                            }
+                        } else {
+                            // Afficher l'erreur dans la popup
+                            confirmationMessage.textContent = data.message;
+                            confirmationMessage.className = "font-bold text-red-600";
                         }
-                    } else {
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+
                         // Afficher l'erreur dans la popup
-                        confirmationMessage.textContent = data.message;
+                        loading.classList.add('hidden');
+                        confirmation.classList.remove('hidden');
+                        confirmationMessage.textContent = "Une erreur est survenue lors de l'opération.";
                         confirmationMessage.className = "font-bold text-red-600";
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    
-                    // Afficher l'erreur dans la popup
-                    loading.classList.add('hidden');
-                    confirmation.classList.remove('hidden');
-                    confirmationMessage.textContent = "Une erreur est survenue lors de l'opération.";
-                    confirmationMessage.className = "font-bold text-red-600";
-                });
+                    });
             });
-            
+
             // Ajouter le gestionnaire pour fermer la popup
             document.getElementById('closePop').addEventListener('click', function() {
                 document.getElementById('popup').classList.add('hidden');
@@ -572,12 +572,12 @@
             if (associationData && associationData.coordinates && associationData.coordinates.length === 2) {
                 let lat = parseFloat(associationData.coordinates[1]); // Latitude
                 let lon = parseFloat(associationData.coordinates[0]); // Longitude
-                
+
                 // Vérifier si la carte a déjà été initialisée
                 if (window.myMap) {
                     window.myMap.remove();
                 }
-                
+
                 // Initialisation de la carte Leaflet
                 window.myMap = L.map('map').setView([lat, lon], 13); // Zoom par défaut
 
@@ -588,7 +588,7 @@
 
                 // Ajouter un marqueur à la carte
                 L.marker([lat, lon]).addTo(window.myMap)
-                    .bindPopup('<b>' + associationName + '</b>')  // Affiche le nom de l'association
+                    .bindPopup('<b>' + associationName + '</b>') // Affiche le nom de l'association
                     .openPopup();
             } else {
                 console.error("Erreur : Coordonnées invalides !");
@@ -607,12 +607,12 @@
                     <div class="reason">${message}</div>
                 </div>
             `;
-            
+
             document.body.appendChild(notification);
-            
+
             // Animation d'affichage
             setTimeout(() => notification.classList.add('show'), 10);
-            
+
             // Suppression après 3 secondes
             setTimeout(() => {
                 notification.classList.remove('show');
@@ -621,4 +621,5 @@
         }
     </script>
 </body>
+
 </html>
