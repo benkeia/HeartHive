@@ -1,11 +1,16 @@
 <?php
-session_start(); // Assure-toi que la session est bien démarrée
+session_start();
 
-// Vérifier si l'ID est envoyé via POST
-if (isset($_POST['association_id'])) {
-    $_SESSION['association_id'] = $_POST['association_id']; // Stocke l'ID dans la session
-    echo "ID de l'association enregistré en session.";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['association_id'])) {
+        $_SESSION['association_id'] = $_POST['association_id'];
+        echo "Association ID set in session";
+    } elseif (isset($_POST['mission_id'])) {
+        $_SESSION['mission_id'] = $_POST['mission_id'];
+        echo "Mission ID set in session";
+    } else {
+        echo "No valid ID provided";
+    }
 } else {
-    echo "Aucun ID d'association reçu.";
+    echo "Invalid request method";
 }
-?>

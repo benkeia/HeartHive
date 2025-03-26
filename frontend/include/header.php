@@ -26,25 +26,25 @@ include '../backend/db.php';
         }
     </style>
 </head>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const popover = document.getElementById('popover');
-                let timeout;
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const popover = document.getElementById('popover');
+        let timeout;
 
-                document.querySelector('.group').addEventListener('mouseenter', function() {
-                    clearTimeout(timeout);
-                    popover.classList.remove('hidden');
-                    popover.classList.add('opacity-100');
-                });
+        document.querySelector('.group').addEventListener('mouseenter', function() {
+            clearTimeout(timeout);
+            popover.classList.remove('hidden');
+            popover.classList.add('opacity-100');
+        });
 
-                document.querySelector('.group').addEventListener('mouseleave', function() {
-                    timeout = setTimeout(function() {
-                        popover.classList.add('hidden');
-                        popover.classList.remove('opacity-100');
-                    }, 100);
-                });
-            });
-        </script>
+        document.querySelector('.group').addEventListener('mouseleave', function() {
+            timeout = setTimeout(function() {
+                popover.classList.add('hidden');
+                popover.classList.remove('opacity-100');
+            }, 100);
+        });
+    });
+</script>
 
 <head>
 

@@ -32,12 +32,7 @@
 
 <body>
 
-  <div class="choice">
-    <input type="radio" id="particulier" name="user_type" value="0" checked>
-    <label for="particulier" class="toggle">Je suis un particulier</label>
-    <input type="radio" id="association" name="user_type" value="1">
-    <label for="association" class="toggle">Je suis une association</label>
-  </div>
+
 
   <style>
     .choice {
