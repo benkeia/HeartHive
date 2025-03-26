@@ -24,6 +24,7 @@ if (!$user_data || empty($user_data['user_adress'])) {
 $user_adress = json_decode($user_data['user_adress'], true);
 if (!isset($user_adress['coordinates']) || !isset($user_adress['range'])) {
     echo "Format d'adresse invalide.";
+
     exit;
 }
 $user_lat = $user_adress['coordinates'][1];

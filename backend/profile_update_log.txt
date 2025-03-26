@@ -1,0 +1,62 @@
+[2025-03-25 21:55:30] Début du traitement de la mise à jour du profil
+[2025-03-25 21:55:30] ID utilisateur: 1
+[2025-03-25 21:55:30] Méthode POST détectée
+[2025-03-25 21:55:30] Données reçues: Array
+(
+    [bio] => Passionné par le volley, j'apprécierais grandement participer dans des associations sportives afin de partager !
+    [location_data] => {"name":"Elbeuf","coordinates":[1.0108998,49.2871086],"range":10}
+)
+
+[2025-03-25 21:55:30] Bio: Passionné par le volley, j'apprécierais grandement participer dans des associations sportives afin de partager !
+[2025-03-25 21:55:30] Données de localisation: {"name":"Elbeuf","coordinates":[1.0108998,49.2871086],"range":10}
+[2025-03-25 21:55:30] Requête SQL: UPDATE user SET user_bio = ?, user_adress = ? WHERE user_id = ?
+[2025-03-25 21:55:30] Types de paramètres: ssi
+[2025-03-25 21:55:30] Paramètres: Array
+(
+    [0] => Passionné par le volley, j'apprécierais grandement participer dans des associations sportives afin de partager !
+    [1] => {"name":"Elbeuf","coordinates":[1.0108998,49.2871086],"range":10}
+    [2] => 1
+)
+
+[2025-03-25 21:55:30] Exécution de la requête...
+[2025-03-25 21:55:30] Requête exécutée avec succès. Lignes affectées: 1
+[2025-03-25 21:55:30] Réponse: Array
+(
+    [status] => success
+    [message] => Profile updated successfully
+)
+
+[2025-03-25 21:55:30] Fin du traitement
+
+[2025-03-25 21:56:04] Début du traitement de la mise à jour du profil
+[2025-03-25 21:56:04] ID utilisateur: 1
+[2025-03-25 21:56:04] Méthode POST détectée
+[2025-03-25 21:56:04] Données reçues: Array
+(
+    [firstName] => Damien
+    [lastName] => Cochard!
+    [bio] => Passionné par le volley, j'apprécierais grandement participer dans des associations sportives afin de partager ! TEST
+)
+
+[2025-03-25 21:56:04] Prénom: Damien, Nom: Cochard!
+[2025-03-25 21:56:04] Bio: Passionné par le volley, j'apprécierais grandement participer dans des associations sportives afin de partager ! TEST
+[2025-03-25 21:56:04] Requête SQL: UPDATE user SET user_firstname = ?, user_name = ?, user_bio = ? WHERE user_id = ?
+[2025-03-25 21:56:04] Types de paramètres: sssi
+[2025-03-25 21:56:04] Paramètres: Array
+(
+    [0] => Damien
+    [1] => Cochard!
+    [2] => Passionné par le volley, j'apprécierais grandement participer dans des associations sportives afin de partager ! TEST
+    [3] => 1
+)
+
+[2025-03-25 21:56:04] Exécution de la requête...
+[2025-03-25 21:56:04] Requête exécutée avec succès. Lignes affectées: 1
+[2025-03-25 21:56:04] Réponse: Array
+(
+    [status] => success
+    [message] => Profile updated successfully
+)
+
+[2025-03-25 21:56:04] Fin du traitement
+
