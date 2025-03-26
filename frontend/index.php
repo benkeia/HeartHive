@@ -263,6 +263,10 @@ if ($result->num_rows > 0) {
             if (typeof userDefaultCity !== 'undefined' && userDefaultCity) {
                 cityInput.value = userDefaultCity;
             }
+            // Pré-remplir le champ avec l'adresse de l'utilisateur si disponible
+            if (typeof userDefaultCity !== 'undefined' && userDefaultCity) {
+                cityInput.value = userDefaultCity;
+            }
 
             // Mise à jour de l'affichage de la distance
             rangeInput.value = <?= $user_range ?? 50 ?>;

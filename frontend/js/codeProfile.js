@@ -267,62 +267,6 @@ function initTagSystem(config) {
     renderFilteredList();
 }
 
-// Calendar
-
-document.addEventListener("DOMContentLoaded", function () {
-    let calendarEl = document.getElementById("calendar");
-
-    if (calendarEl) {
-        let calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: "dayGridMonth",
-            locale: "fr",
-            selectable: true,
-            editable: true,
-            headerToolbar: {
-                left: "prev,next today",
-                center: "title",
-                right: "dayGridMonth,timeGridWeek,timeGridDay"
-            },
-            events: [
-                {
-                    title: "Réunion",
-                    start: "2025-03-10T10:00:00",
-                    end: "2025-03-10T12:00:00"
-                },
-                {
-                    title: "Disponibilité",
-                    start: "2025-03-12",
-                    allDay: true
-                }
-            ],
-            dateClick: function (info) {
-                let eventTitle = prompt("Entrez un titre pour cette disponibilité :");
-                if (eventTitle) {
-                    calendar.addEvent({
-                        title: eventTitle,
-                        start: info.dateStr,
-                        allDay: true
-                    });
-                }
-            },
-            eventClick: function (info) {
-                if (confirm("Voulez-vous supprimer cet événement ?")) {
-                    info.event.remove();
-                }
-            }
-        });
-
-        calendar.render();
-        setTimeout(() => {
-            let todayCell = document.querySelector(".fc-day-today");
-            if (todayCell) {
-                todayCell.scrollIntoView({ behavior: "smooth", block: "center" });
-            }
-        }, 500);
-    } else {
-        console.error("L'élément #calendar est introuvable.");
-    }
-});
 
 // Modifier le profil
 
@@ -396,3 +340,45 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+ // Navigation par onglets simplifiée et optimisée
+ document.addEventListener('DOMContentLoaded', function () {
+    // Sélectionner tous les onglets dans le menu latéral
+    const tabLinks = document.querySelectorAll('#profileTabs li');
+
+    // Ajouter un gestionnaire d'événement à chaque onglet
+    tabLinks.forEach(tab => {
+      tab.addEventListener('click', function () {
+        // Récupérer l'ID de l'onglet à afficher
+        const tabId = this.getAttribute('data-tab');
+
+        console.log(`Clic sur onglet: ${tabId}`);
+
+        // 1. Désactiver tous les onglets (menu latéral)
+        tabLinks.forEach(t => t.classList.remove('active'));
+
+        // 2. Activer l'onglet sélectionné
+        this.classList.add('active');
+
+        // 3. Masquer tous les contenus
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabContents.forEach(content => {
+          content.classList.remove('active');
+          content.classList.add('hidden');
+        });
+
+        // 4. Afficher le contenu correspondant à l'onglet sélectionné
+        const selectedContent = document.getElementById(`${tabId}Tab`);
+        if (selectedContent) {
+          selectedContent.classList.remove('hidden');
+          selectedContent.classList.add('active');
+          console.log(`Onglet "${tabId}" activé`);
+        } else {
+          console.error(`Contenu d'onglet "${tabId}Tab" introuvable`);
+        }
+      });
+    });
+
+    console.log("Navigation par onglets initialisée avec succès");
+  });
+
