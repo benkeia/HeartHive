@@ -587,6 +587,53 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
               background-color: #FFE9EF;
               color: #CF3275;
             }
+            .xp-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(to right, #8B5CF6, #EC4899);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.xp-notification.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.xp-notification .icon {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.xp-notification .content {
+  flex: 1;
+}
+
+.xp-notification .points {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.xp-notification .reason {
+  font-size: 14px;
+  opacity: 0.9;
+}
           </style>
           <div class="w-full lg:w-1/2">
             <?php include 'include/update_availability.php'; ?>
@@ -597,7 +644,7 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
       </div>
 
       <!-- Section Engagements (initialement cachée) -->
-      <<!-- Section Engagements (initialement cachée) -->
+      <!-- Section Engagements (initialement cachée) -->
         <div id="engagementsTab" class="tab-content hidden">
           <div class="bg-white rounded-xl shadow-custom p-6">
             <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes engagements</h2>
@@ -634,14 +681,17 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
                       <div class="w-3/4 p-4">
                         <div class="flex justify-between items-start">
                           <h3 class="text-lg font-semibold text-gray-800">
-                            <?php echo htmlspecialchars($asso['association_name']); ?></h3>
+                            <?php echo htmlspecialchars($asso['association_name']); ?>
+                          </h3>
                           <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
                             En attente
                           </span>
                         </div>
                         <p class="text-gray-600 text-sm mt-2"><?php echo htmlspecialchars($asso['association_desc']); ?></p>
+                        <h3 class="text-gray-800 text-md mt-2">Mission</h3>
+                        <p class="text-gray-600 text-sm mt-2"><?php echo htmlspecialchars($asso['association_mission']); ?>
+                        </p>
                         <div class="mt-4 flex justify-between items-center">
-
                           <form id="viewForm_<?php echo $asso['association_id']; ?>" method="post" action="set_session.php"
                             class="inline-block" style="display:inline;">
                             <input type="hidden" name="association_id" value="<?php echo $asso['association_id']; ?>">
@@ -680,12 +730,135 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
         </div>
 
         <!-- Autres sections pour les autres onglets (statistiques, certifications, etc.) -->
-        <div id="statsTab" class="tab-content hidden">
-          <!-- Contenu pour les statistiques -->
+                  <!-- Contenu pour les statistiques -->
+                  <div id="statsTab" class="tab-content hidden">
+  <div class="bg-white rounded-xl shadow-custom p-6">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes statistiques</h2>
+    
+    <div class="text-center py-12">
+      <div class="relative mx-auto w-64 h-64 mb-8">
+        <!-- Animation SVG -->
+        <svg class="animate-spin-slow absolute inset-0" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#ffd6e2" stroke-width="8" />
+          <path d="M50 5 A 45 45 0 0 1 95 50" fill="none" stroke="#CF3275" stroke-width="8" stroke-linecap="round" />
+        </svg>
+        
+        <!-- Icône centrale -->
+        <div class="absolute inset-0 flex items-center justify-center">
+          <svg class="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
         </div>
+      </div>
+      
+      <h3 class="text-xl font-semibold text-gray-700 mb-3">Statistiques en cours de développement</h3>
+      <p class="text-gray-500 max-w-md mx-auto mb-8">Nous travaillons activement sur cette fonctionnalité pour vous offrir une vue détaillée de votre parcours bénévole et de votre impact. Revenez bientôt !</p>
+      
+      <!-- Fausse barre de progression -->
+      <div class="max-w-md mx-auto mb-6">
+        <div class="bg-gray-100 rounded-full h-4 overflow-hidden">
+          <div class="bg-gradient-to-r from-primary to-secondary h-full rounded-full" style="width: 65%"></div>
+        </div>
+        <p class="text-sm text-gray-500 mt-2">Progression: 65%</p>
+      </div>
+      
+      <!-- Aperçu de ce qui arrive -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto mt-10">
+        <div class="bg-purple-50 rounded-lg p-4 border border-purple-100 flex flex-col items-center">
+          <div class="rounded-full bg-purple-100 p-3 mb-3">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h4 class="font-medium text-gray-700">Heures de bénévolat</h4>
+        </div>
+        
+        <div class="bg-pink-50 rounded-lg p-4 border border-pink-100 flex flex-col items-center">
+          <div class="rounded-full bg-pink-100 p-3 mb-3">
+            <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h4 class="font-medium text-gray-700">Missions accomplies</h4>
+        </div>
+        
+        <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-100 flex flex-col items-center">
+          <div class="rounded-full bg-indigo-100 p-3 mb-3">
+            <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            </svg>
+          </div>
+          <h4 class="font-medium text-gray-700">Impact social</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes spin-slow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .animate-spin-slow {
+    animation: spin-slow 10s linear infinite;
+  }
+</style>
 
         <div id="certificationsTab" class="tab-content hidden">
           <!-- Contenu pour les certifications -->
+          <?php
+// Récupérer les données d'XP de l'utilisateur
+$stmt = $conn->prepare("SELECT * FROM user_experience WHERE user_id = ?");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Valeurs par défaut
+$xp_data = [
+    'total_points' => 0,
+    'current_level' => 1,
+    'points_to_next_level' => 100
+];
+
+if ($result->num_rows > 0) {
+    $xp_data = $result->fetch_assoc();
+}
+
+// Noms des niveaux
+$level_names = [
+    1 => "Bénévole Débutant",
+    2 => "Bénévole Actif",
+    3 => "Bénévole Engagé",
+    4 => "Bénévole Expérimenté",
+    5 => "Bénévole Expert",
+    // etc.
+];
+
+// Calculer le pourcentage pour la barre de progression
+$prev_level_xp = 0; // XP minimale du niveau actuel
+$next_level_xp = $xp_data['points_to_next_level']; // XP minimale du niveau suivant
+$current_level_progress = ($xp_data['total_points'] - $prev_level_xp) / ($next_level_xp - $prev_level_xp) * 100;
+$current_level_progress = min(100, max(0, $current_level_progress)); // Limiter entre 0 et 100%
+
+$level_name = isset($level_names[$xp_data['current_level']]) ? $level_names[$xp_data['current_level']] : "Niveau " . $xp_data['current_level'];
+$next_level_name = isset($level_names[$xp_data['current_level'] + 1]) ? $level_names[$xp_data['current_level'] + 1] : "Niveau " . ($xp_data['current_level'] + 1);
+?>
+
+<!-- Dans la section "Récompenses" de votre HTML -->
+<div class="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-5 mb-8">
+  <div class="flex justify-between mb-3">
+    <h3 class="text-xl font-bold text-purple-900">Niveau <?= $xp_data['current_level'] ?>: <?= $level_name ?></h3>
+    <span class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full font-bold"><?= $xp_data['total_points'] ?> XP</span>
+  </div>
+  <div class="w-full bg-white rounded-full h-4 overflow-hidden">
+    <div class="bg-gradient-to-r from-primary to-secondary h-full rounded-full" style="width: <?= $current_level_progress ?>%"></div>
+  </div>
+  <div class="flex justify-between mt-1 text-sm text-gray-700">
+    <span><?= $xp_data['total_points'] ?> / <?= $next_level_xp ?> XP pour le niveau <?= $xp_data['current_level'] + 1 ?></span>
+    <span>Prochain niveau: <?= $next_level_name ?></span>
+  </div>
+</div>
         </div>
 
         <div id="messagesTab" class="tab-content hidden">
@@ -699,6 +872,47 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
   </div>
 
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+  // Attribuer des points pour la connexion quotidienne
+  fetch('../backend/xp.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'action=daily_login&details=login'
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      showXPNotification(data.points, "Connexion quotidienne!");
+    // Vérifier si l'utilisateur a monté de niveau
+    if (data.level_up) {
+      // Noms des niveaux (à synchroniser avec le backend)
+      const level_names = {
+        1: "Bénévole Débutant",
+        2: "Bénévole Actif",
+        3: "Bénévole Engagé",
+        4: "Bénévole Expérimenté",
+        5: "Bénévole Expert",
+        6: "Bénévole Maître",
+        7: "Bénévole Émérite",
+        8: "Bénévole Légendaire",
+        9: "Bénévole Héroïque",
+        10: "Bénévole Mythique"
+      };
+      
+      // Afficher la notification de montée de niveau
+      const levelName = level_names[data.new_level] || "Niveau " + data.new_level;
+      setTimeout(() => {
+        showLevelUpNotification(data.new_level, levelName);
+      }, 1500); // Montrer après la notification XP
+    }
+  }
+})
+  .catch(error => console.error('Erreur XP:', error));
+  
+  // Le reste de votre code...
+});
   </script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -1014,14 +1228,52 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
             })
               .then(response => response.json())
               .then(data => {
-                if (data.status === 'success') {
-                  console.log('Photo de profil mise à jour avec succès');
-                  // Mettre à jour l'image de profil sur la page
-                  document.getElementById('profilePic').src = data.image_path;
-                } else {
-                  console.error('Erreur lors de la mise à jour de la photo de profil:', data.message);
-                }
-              })
+  if (data.status === 'success') {
+    console.log('Photo de profil mise à jour avec succès');
+    // Mettre à jour l'image de profil sur la page
+    document.getElementById('profilePic').src = data.image_path;
+    
+    // Ajouter des points XP pour la photo de profil
+    fetch('../backend/xp.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'action=add_profile_picture&details=photo'
+    })
+    .then(response => response.json())
+    .then(xpData => {
+      if (xpData.status === 'success') {
+        showXPNotification(xpData.points, "Photo ajoutée!");
+      // Vérifier si l'utilisateur a monté de niveau
+    if (data.level_up) {
+      // Noms des niveaux (à synchroniser avec le backend)
+      const level_names = {
+        1: "Bénévole Débutant",
+        2: "Bénévole Actif",
+        3: "Bénévole Engagé",
+        4: "Bénévole Expérimenté",
+        5: "Bénévole Expert",
+        6: "Bénévole Maître",
+        7: "Bénévole Émérite",
+        8: "Bénévole Légendaire",
+        9: "Bénévole Héroïque",
+        10: "Bénévole Mythique"
+      };
+      
+      // Afficher la notification de montée de niveau
+      const levelName = level_names[data.new_level] || "Niveau " + data.new_level;
+      setTimeout(() => {
+        showLevelUpNotification(data.new_level, levelName);
+      }, 1500); // Montrer après la notification XP
+    }
+  }
+})
+    .catch(error => console.error('Erreur XP:', error));
+  } else {
+    console.error('Erreur lors de la mise à jour de la photo de profil:', data.message);
+  }
+})
               .catch(error => {
                 console.error('Erreur:', error);
               });
@@ -1045,14 +1297,17 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
           })
             .then(response => response.json())
             .then(data => {
-              if (data.status === 'success') {
-                alert('Profil mis à jour avec succès');
-                // Recharger la page ou mettre à jour l'affichage
-                window.location.reload();
-              } else {
-                alert('Erreur: ' + data.message);
-              }
-            })
+  if (data.status === 'success') {
+    // Vérifier si le profil est complet pour donner de l'XP
+    checkProfileCompleteness(formData);
+    
+    alert('Profil mis à jour avec succès');
+    // Recharger la page
+    window.location.reload();
+  } else {
+    alert('Erreur: ' + data.message);
+  }
+})
             .catch(error => {
               console.error('Erreur:', error);
               alert('Une erreur est survenue lors de la mise à jour du profil');
@@ -1102,6 +1357,131 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
           console.error("Erreur AJAX:", error);
         });
     }
+
+
+
+    // Ajouter cette fonction dans la section <script> (vers la ligne 1080)
+function checkProfileCompleteness(formData) {
+  // Vérifier si tous les champs sont remplis
+  const hasBio = document.getElementById('bio').value.trim().length > 10;
+  const hasLocation = document.getElementById('locationCoordinates').value !== '';
+  const hasName = document.getElementById('firstName') && document.getElementById('lastName');
+  const hasPicture = document.getElementById('profilePic').src.indexOf('default.webp') === -1;
+  
+  // Si le profil est complet, attribuer des points
+  if (hasBio && hasLocation && hasName && hasPicture) {
+    // Attribuer des points pour avoir complété le profil
+    fetch('../backend/xp.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'action=complete_profile&details=profil'
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showXPNotification(data.points, "Profil complété!");
+      // Vérifier si l'utilisateur a monté de niveau
+    if (data.level_up) {
+      // Noms des niveaux (à synchroniser avec le backend)
+      const level_names = {
+        1: "Bénévole Débutant",
+        2: "Bénévole Actif",
+        3: "Bénévole Engagé",
+        4: "Bénévole Expérimenté",
+        5: "Bénévole Expert",
+        6: "Bénévole Maître",
+        7: "Bénévole Émérite",
+        8: "Bénévole Légendaire",
+        9: "Bénévole Héroïque",
+        10: "Bénévole Mythique"
+      };
+      
+      // Afficher la notification de montée de niveau
+      const levelName = level_names[data.new_level] || "Niveau " + data.new_level;
+      setTimeout(() => {
+        showLevelUpNotification(data.new_level, levelName);
+      }, 1500); // Montrer après la notification XP
+    }
+  }
+})
+    .catch(error => console.error('Erreur XP:', error));
+  } else {
+    // Attribuer des points pour la mise à jour du profil
+    fetch('../backend/xp.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'action=update_profile&details=profil'
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showXPNotification(data.points, "Profil mis à jour!");
+      // Vérifier si l'utilisateur a monté de niveau
+    if (data.level_up) {
+      // Noms des niveaux (à synchroniser avec le backend)
+      const level_names = {
+        1: "Bénévole Débutant",
+        2: "Bénévole Actif",
+        3: "Bénévole Engagé",
+        4: "Bénévole Expérimenté",
+        5: "Bénévole Expert",
+        6: "Bénévole Maître",
+        7: "Bénévole Émérite",
+        8: "Bénévole Légendaire",
+        9: "Bénévole Héroïque",
+        10: "Bénévole Mythique"
+      };
+      
+      // Afficher la notification de montée de niveau
+      const levelName = level_names[data.new_level] || "Niveau " + data.new_level;
+      setTimeout(() => {
+        showLevelUpNotification(data.new_level, levelName);
+      }, 1500); // Montrer après la notification XP
+    }
+  }
+})
+    .catch(error => console.error('Erreur XP:', error));
+  }
+}
+  </script>
+  <script>
+    // Créez une fonction pour afficher une notification quand l'utilisateur gagne de l'XP
+function showXPNotification(points, reason) {
+  const notification = document.createElement('div');
+  notification.className = 'fixed bottom-4 right-4 bg-gradient-to-r from-primary to-secondary text-white py-2 px-4 rounded-lg shadow-lg z-50 transform transition-all duration-500 translate-y-20 opacity-0';
+  notification.innerHTML = `
+    <div class="flex items-center">
+      <div class="mr-3 bg-white rounded-full p-2">
+        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+      </div>
+      <div>
+        <p class="font-medium">+${points} XP</p>
+        <p class="text-sm text-white-200">${reason}</p>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Animation d'entrée
+  setTimeout(() => {
+    notification.classList.remove('translate-y-20', 'opacity-0');
+  }, 100);
+  
+  // Animation de sortie
+  setTimeout(() => {
+    notification.classList.add('translate-y-20', 'opacity-0');
+    setTimeout(() => {
+      notification.remove();
+    }, 500);
+  }, 4000);
+}
   </script>
 
 </body>

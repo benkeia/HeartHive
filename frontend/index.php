@@ -41,7 +41,7 @@ if (!$user_data || empty($user_data['user_adress'])) {
 $user_adress = json_decode($user_data['user_adress'], true);
 if (!isset($user_adress['coordinates']) || !isset($user_adress['range'])) {
     echo "Format d'adresse invalide.";
-    
+
     exit;
 }
 $user_lat = $user_adress['coordinates'][1];
@@ -93,218 +93,231 @@ if ($result->num_rows > 0) {
     <h1 class="px-10 text-4xl font-bold mt-10">HeartHive</h1>
 
     <div class="main-container flex flex-row ">
-    <div class="container w-1/4 flex justify-end">
-        <div class="row">
-            <div class="col-3">
-                <div class="filtres flex flex-col gap-4 p-5 bg-white rounded-lg shadow-md w-72 mt-28">
-                    <h2 class="mb-2">Filtres</h2>
-        
-                    <label for="city">Ville</label>
-                    <input type="text" id="city" placeholder="Rechercher une ville..." class="w-full p-2 border border-gray-300 rounded-md">
-        
-                    <label for="distance">Distance</label>
-                    <div class="slider-container flex items-center gap-2">
-                        <input type="range" id="distance" min="1" max="200" value="10" class="flex-grow" step="10">
-                        <span id="distanceValue">50km</span>
-                    </div>
-        
-                    <label for="sort">Trier par</label>
-                    <select id="sort" class="w-full p-2 border border-gray-300 rounded-md">
-                        <option value="closest">Le plus proche</option>
-                        <option value="recent">Le plus récent</option>
-                    </select>
-        
-                    <label>Catégories</label>
-                    <div class="categories flex flex-wrap gap-2">
-                        <button class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">🎨 Art</button>
-                        <button class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">🎵 Musique</button>
-                        <button class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">⚽ Sport</button>
-                        <button class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">❤️ Humanitaire</button>
-                        <button class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">⚖️ Droits / Inclusion</button>
-                        <button class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">📚 Enseignement</button>
+        <div class="container w-1/4 flex justify-end">
+            <div class="row">
+                <div class="col-3">
+                    <div class="filtres flex flex-col gap-4 p-5 bg-white rounded-lg shadow-md w-72 mt-28">
+                        <h2 class="mb-2">Filtres</h2>
+
+                        <label for="city">Ville</label>
+                        <input type="text" id="city" placeholder="Rechercher une ville..."
+                            class="w-full p-2 border border-gray-300 rounded-md">
+
+                        <label for="distance">Distance</label>
+                        <div class="slider-container flex items-center gap-2">
+                            <input type="range" id="distance" min="1" max="200" value="10" class="flex-grow" step="10">
+                            <span id="distanceValue">50km</span>
+                        </div>
+
+                        <label for="sort">Trier par</label>
+                        <select id="sort" class="w-full p-2 border border-gray-300 rounded-md">
+                            <option value="closest">Le plus proche</option>
+                            <option value="recent">Le plus récent</option>
+                        </select>
+
+                        <label>Catégories</label>
+                        <div class="categories flex flex-wrap gap-2">
+                            <button
+                                class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">🎨
+                                Art</button>
+                            <button
+                                class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">🎵
+                                Musique</button>
+                            <button
+                                class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">⚽
+                                Sport</button>
+                            <button
+                                class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">❤️
+                                Humanitaire</button>
+                            <button
+                                class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">⚖️
+                                Droits / Inclusion</button>
+                            <button
+                                class="category-btn flex items-center gap-1 p-2 border border-gray-300 rounded-full bg-white cursor-pointer text-sm">📚
+                                Enseignement</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="flex justify-center items-center mt-20 w-3/4">
-        <div class="card-container flex gap-x-10 gap-y-5 flex-row flex-wrap w-2/3">
-            <?php if (!empty($associations)): ?>
-                <?php foreach ($associations as $association): ?>
-                    <?php
-                    $association_adress = json_decode($association['association_adress'], true);
-                    $coordinates = implode(', ', $association_adress['coordinates']);
-                    ?>
-                    <a class="transform w-72 h-[400px] bg-white rounded-lg shadow-md flex flex-col hover:shadow-lg transition-all duration-500 hover:scale-110 hover:bg-slate-100 association-link"
-                        href="association.php" data-id="<?= htmlspecialchars($association['association_id']) ?>">
-                        <img src="assets/uploads/background_image/defaultAssociation.jpg" alt="Illustration"
-                            class="w-full rounded-md">
-                        <div class="p-5">
-                            <div class="flex justify-between items-start mt-3">
-                                <h2 class="text-lg font-bold"><?= htmlspecialchars($association['association_name']) ?></h2>
-                                <p class="text-sm text-gray-500"><?= round($association['distance'], 2) ?>
-                                    km<?= $association['within_range'] ?></p>
+        <div class="flex justify-center items-center mt-20 w-3/4">
+            <div class="card-container flex gap-x-10 gap-y-5 flex-row flex-wrap w-2/3">
+                <?php if (!empty($associations)): ?>
+                    <?php foreach ($associations as $association): ?>
+                        <?php
+                        $association_adress = json_decode($association['association_adress'], true);
+                        $coordinates = implode(', ', $association_adress['coordinates']);
+                        ?>
+                        <a class="transform w-72 h-[400px] bg-white rounded-lg shadow-md flex flex-col hover:shadow-lg transition-all duration-500 hover:scale-110 hover:bg-slate-100 association-link"
+                            href="association.php" data-id="<?= htmlspecialchars($association['association_id']) ?>">
+                            <img src="assets/uploads/background_image/defaultAssociation.jpg" alt="Illustration"
+                                class="w-full rounded-md">
+                            <div class="p-5">
+                                <div class="flex justify-between items-start mt-3">
+                                    <h2 class="text-lg font-bold"><?= htmlspecialchars($association['association_name']) ?></h2>
+                                    <p class="text-sm text-gray-500"><?= round($association['distance'], 2) ?>
+                                        km<?= $association['within_range'] ?></p>
+                                </div>
+
+                                <p class="bg-gray-200 text-sm px-3 py-1 rounded-full mt-2 w-max">📖 Tutorat</p>
+
+                                <p class="text-sm text-gray-700 mt-2 line-clamp-6">
+                                    <?= htmlspecialchars($association['association_mission']) ?>
+                                </p>
                             </div>
-
-                            <p class="bg-gray-200 text-sm px-3 py-1 rounded-full mt-2 w-max">📖 Tutorat</p>
-
-                            <p class="text-sm text-gray-700 mt-2 line-clamp-6">
-                                <?= htmlspecialchars($association['association_mission']) ?>
-                            </p>
-                        </div>
-                    </a>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <p>Aucune association trouvée.</p>
-            <?php endif; ?>
+                        </a>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p>Aucune association trouvée.</p>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
-    </div>
-    <?php echo '<script>const userDefaultCity = "' . htmlspecialchars($user_adress['name']) . '";</script>';?>
+    <?php echo '<script>const userDefaultCity = "' . htmlspecialchars($user_adress['name']) . '";</script>'; ?>
     <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const rangeInput = document.getElementById("distance");
-    const distanceValue = document.getElementById("distanceValue");
-    const cityInput = document.getElementById("city");
-    const sortSelect = document.getElementById("sort");
-    let debounceTimer;
+        document.addEventListener("DOMContentLoaded", function () {
+            const rangeInput = document.getElementById("distance");
+            const distanceValue = document.getElementById("distanceValue");
+            const cityInput = document.getElementById("city");
+            const sortSelect = document.getElementById("sort");
+            let debounceTimer;
 
-    // Fonction pour attacher les événements de clic aux associations
-    function attachAssociationEventListeners() {
-        document.querySelectorAll(".association-link").forEach(link => {
-            link.addEventListener("click", function (event) {
-                event.preventDefault(); // Empêche la redirection immédiate
+            // Fonction pour attacher les événements de clic aux associations
+            function attachAssociationEventListeners() {
+                document.querySelectorAll(".association-link").forEach(link => {
+                    link.addEventListener("click", function (event) {
+                        event.preventDefault(); // Empêche la redirection immédiate
 
-                let associationId = this.getAttribute("data-id");
+                        let associationId = this.getAttribute("data-id");
 
-                // Envoi de l'ID en session via une requête AJAX
-                fetch("set_session.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: "association_id=" + associationId
-                })
-                    .then(response => response.text())
-                    .then(() => {
-                        window.location.href = "association.php"; // Redirection après stockage
-                    })
-                    .catch(error => console.error("Erreur lors de l'envoi de l'ID :", error));
+                        // Envoi de l'ID en session via une requête AJAX
+                        fetch("set_session.php", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: "association_id=" + associationId
+                        })
+                            .then(response => response.text())
+                            .then(() => {
+                                window.location.href = "association.php"; // Redirection après stockage
+                            })
+                            .catch(error => console.error("Erreur lors de l'envoi de l'ID :", error));
+                    });
+                });
+            }
+
+            // Pré-remplir le champ avec l'adresse de l'utilisateur si disponible
+            if (typeof userDefaultCity !== 'undefined' && userDefaultCity) {
+                cityInput.value = userDefaultCity;
+            }
+
+            // Mise à jour de l'affichage de la distance
+            distanceValue.textContent = `${rangeInput.value} km`;
+
+            // Gestion de la barre de distance avec incréments de 10km
+            rangeInput.addEventListener("input", function () {
+                const value = Math.round(this.value / 10) * 10;
+                distanceValue.textContent = `${value} km`;
+
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    this.value = value;
+                    updateAssociations();
+                }, 500);
             });
-        });
-    }
 
-    // Pré-remplir le champ avec l'adresse de l'utilisateur si disponible
-    if (typeof userDefaultCity !== 'undefined' && userDefaultCity) {
-        cityInput.value = userDefaultCity;
-    }
+            // Gestion du champ ville avec debounce
+            cityInput.addEventListener("input", function () {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    updateAssociations();
+                }, 1000);
+            });
 
-    // Mise à jour de l'affichage de la distance
-    distanceValue.textContent = `${rangeInput.value} km`;
+            // Gestion du tri sans debounce (changement immédiat)
+            sortSelect.addEventListener("change", updateAssociations);
 
-    // Gestion de la barre de distance avec incréments de 10km
-    rangeInput.addEventListener("input", function () {
-        const value = Math.round(this.value / 10) * 10;
-        distanceValue.textContent = `${value} km`;
-
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            this.value = value;
-            updateAssociations();
-        }, 500);
-    });
-
-    // Gestion du champ ville avec debounce
-    cityInput.addEventListener("input", function () {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            updateAssociations();
-        }, 1000);
-    });
-
-    // Gestion du tri sans debounce (changement immédiat)
-    sortSelect.addEventListener("change", updateAssociations);
-
-    function getUserLocation(callback) {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    callback({ lat: position.coords.latitude, lon: position.coords.longitude });
-                },
-                () => {
-                    console.warn("Impossible d'obtenir la localisation.");
+            function getUserLocation(callback) {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            callback({ lat: position.coords.latitude, lon: position.coords.longitude });
+                        },
+                        () => {
+                            console.warn("Impossible d'obtenir la localisation.");
+                            callback(null);
+                        }
+                    );
+                } else {
+                    console.warn("Géolocalisation non supportée.");
                     callback(null);
                 }
-            );
-        } else {
-            console.warn("Géolocalisation non supportée.");
-            callback(null);
-        }
-    }
+            }
 
-    function updateAssociations() {
-        let city = cityInput.value.trim();
-        let distance = Math.round(rangeInput.value / 10) * 10;
-        let sort = sortSelect.value;
+            function updateAssociations() {
+                let city = cityInput.value.trim();
+                let distance = Math.round(rangeInput.value / 10) * 10;
+                let sort = sortSelect.value;
 
-        if (city) {
-            if (city.length < 3) return; // Empêche les requêtes inutiles
-            
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`, {
-                headers: { "User-Agent": "HeartHive/1.0 (barryvert@gmail.com)" }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.length > 0) {
-                        fetchFilteredAssociations(data[0].lat, data[0].lon, distance, sort);
-                    } else {
-                        console.warn("Aucune correspondance pour la ville saisie.");
-                    }
-                })
-                .catch(error => console.error("Erreur lors de la récupération des coordonnées :", error));
-        } else {
-            getUserLocation((userCoords) => {
-                if (userCoords) {
-                    fetchFilteredAssociations(userCoords.lat, userCoords.lon, distance, sort);
+                if (city) {
+                    if (city.length < 3) return; // Empêche les requêtes inutiles
+
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`, {
+                        headers: { "User-Agent": "HeartHive/1.0 (barryvert@gmail.com)" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.length > 0) {
+                                fetchFilteredAssociations(data[0].lat, data[0].lon, distance, sort);
+                            } else {
+                                console.warn("Aucune correspondance pour la ville saisie.");
+                            }
+                        })
+                        .catch(error => console.error("Erreur lors de la récupération des coordonnées :", error));
                 } else {
-                    console.warn("Impossible d'utiliser la géolocalisation.");
+                    getUserLocation((userCoords) => {
+                        if (userCoords) {
+                            fetchFilteredAssociations(userCoords.lat, userCoords.lon, distance, sort);
+                        } else {
+                            console.warn("Impossible d'utiliser la géolocalisation.");
+                        }
+                    });
                 }
-            });
-        }
-    }
+            }
 
-    function fetchFilteredAssociations(lat, lon, distance, sort) {
-        const container = document.querySelector(".card-container");
-        container.innerHTML = "<p class='text-center w-full'>Chargement des associations...</p>";
+            function fetchFilteredAssociations(lat, lon, distance, sort) {
+                const container = document.querySelector(".card-container");
+                container.innerHTML = "<p class='text-center w-full'>Chargement des associations...</p>";
 
-        fetch("filter_associations.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `lat=${lat}&lon=${lon}&distance=${distance}&sort=${sort}`
-        })
-            .then(response => response.json())
-            .then(updateAssociationsUI)
-            .catch(error => {
-                console.error("Erreur lors du chargement des associations :", error);
-                container.innerHTML = "<p class='text-center w-full text-red-500'>Erreur lors du chargement des associations</p>";
-            });
-    }
+                fetch("filter_associations.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: `lat=${lat}&lon=${lon}&distance=${distance}&sort=${sort}`
+                })
+                    .then(response => response.json())
+                    .then(updateAssociationsUI)
+                    .catch(error => {
+                        console.error("Erreur lors du chargement des associations :", error);
+                        container.innerHTML = "<p class='text-center w-full text-red-500'>Erreur lors du chargement des associations</p>";
+                    });
+            }
 
-    function updateAssociationsUI(data) {
-        const container = document.querySelector(".card-container");
-        container.innerHTML = "";
+            function updateAssociationsUI(data) {
+                const container = document.querySelector(".card-container");
+                container.innerHTML = "";
 
-        if (data.length === 0) {
-            container.innerHTML = "<p class='text-center w-full'>Aucune association trouvée avec ces critères.</p>";
-            return;
-        }
+                if (data.length === 0) {
+                    container.innerHTML = "<p class='text-center w-full'>Aucune association trouvée avec ces critères.</p>";
+                    return;
+                }
 
-        data.forEach(association => {
-            let sortMessage = sortSelect.value === "closest"
-                ? `${association.distance.toFixed(2)} km`
-                : association.created_at
-                ? new Date(association.created_at).toLocaleDateString()
-                : "";
+                data.forEach(association => {
+                    let sortMessage = sortSelect.value === "closest"
+                        ? `${association.distance.toFixed(2)} km`
+                        : association.created_at
+                            ? new Date(association.created_at).toLocaleDateString()
+                            : "";
 
-            let associationHTML = `
+                    let associationHTML = `
                 <a class="transform w-72 h-[400px] bg-white rounded-lg shadow-md flex flex-col hover:shadow-lg transition-all duration-500 hover:scale-110 hover:bg-slate-100 association-link"
                    href="#" data-id="${association.association_id}">
                     <img src="${association.image_url || 'assets/uploads/background_image/defaultAssociation.jpg'}" alt="Illustration"
@@ -318,20 +331,45 @@ document.addEventListener("DOMContentLoaded", function () {
                         <p class="text-sm text-gray-700 mt-2 line-clamp-6">${association.association_mission}</p>
                     </div>
                 </a>`;
-            container.insertAdjacentHTML("beforeend", associationHTML);
+                    container.insertAdjacentHTML("beforeend", associationHTML);
+                });
+
+                // Réattacher les événements de clic sur les nouvelles associations
+                attachAssociationEventListeners();
+            }
+
+            // Lancer la recherche initiale au chargement de la page
+            updateAssociations();
         });
-
-        // Réattacher les événements de clic sur les nouvelles associations
-        attachAssociationEventListeners();
-    }
-
-    // Lancer la recherche initiale au chargement de la page
-    updateAssociations();
-});
 
     </script>
 
-    
+    <script>
+        function submitAndRedirect(associationId) {
+            console.log("Fonction appelée avec ID:", associationId);
+
+            // Méthode plus simple utilisant la même approche que dans index.php
+            fetch("set_session.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "association_id=" + associationId
+            })
+                .then(response => {
+                    console.log("Réponse du serveur:", response.status);
+                    return response.text();
+                })
+                .then(data => {
+                    console.log("Données reçues:", data);
+                    // Redirection après le stockage
+                    window.location.href = "association.php";
+                })
+                .catch(error => {
+                    console.error("Erreur lors de l'envoi de l'ID:", error);
+                    // Méthode de secours en cas d'échec
+                    alert("Redirection manuelle nécessaire. Erreur: " + error);
+                });
+        }
+    </script>
 
     <script type="module" src="../node_modules/dropzone/dist/dropzone-min.js"></script>
     <script type="module" src="js/script.js"></script>

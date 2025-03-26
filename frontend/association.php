@@ -11,7 +11,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="frontend/assets/css/style.css">
+        <link rel="stylesheet" href="assets/css/style.css">
     <!-- CSS Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
@@ -117,60 +117,89 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        document.getElementById('postulationForm').addEventListener('submit', function (event) {
-            event.preventDefault(); // Empêche le rechargement de la page
+        // Remplacer ou modifier le code qui gère la soumission du formulaire de postulation
+// Remplacez le code du gestionnaire d'événement par celui-ci
+document.getElementById('postulationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    // Afficher la popup de chargement
+    const popup = document.getElementById('popup');
+    const loading = document.getElementById('loading');
+    const confirmation = document.getElementById('confirmation');
+    const confirmationMessage = document.getElementById('confirmationMessage');
+    
+    // Afficher la popup avec l'animation de chargement
+    popup.classList.remove('hidden');
+    loading.classList.remove('hidden');
+    confirmation.classList.add('hidden');
+    
+    fetch('postulate.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Cacher le loading, afficher la confirmation
+        loading.classList.add('hidden');
+        confirmation.classList.remove('hidden');
+        
+        if (data.status === 'success') {
+            // Définir le message de confirmation
+            confirmationMessage.textContent = data.message;
+            confirmationMessage.className = "font-bold text-green-600";
+            
+            // Si XP ajouté, afficher la notification
+            if (data.xp_added && data.xp_points > 0) {
+                showXPNotification(data.xp_points, "Candidature envoyée!");
+            }
+        } else {
+            // Afficher l'erreur dans la popup
+            confirmationMessage.textContent = data.message;
+            confirmationMessage.className = "font-bold text-red-600";
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        
+        // Afficher l'erreur dans la popup
+        loading.classList.add('hidden');
+        confirmation.classList.remove('hidden');
+        confirmationMessage.textContent = "Une erreur est survenue lors de la postulation.";
+        confirmationMessage.className = "font-bold text-red-600";
+    });
+});
 
-            const popup = document.getElementById('popup');
-            const loading = document.getElementById('loading');
-            const confirmation = document.getElementById('confirmation');
-            const confirmationMessage = document.getElementById('confirmationMessage');
-            const formData = new FormData(this);
-            const closePop = document.getElementById('closePop');
+// Ajouter le gestionnaire pour fermer la popup
+document.getElementById('closePop').addEventListener('click', function() {
+    document.getElementById('popup').classList.add('hidden');
+    window.location.reload(); // Recharger la page après fermeture
+});
 
-            // Affiche la pop-up avec le chargement
-            popup.classList.remove('hidden');
-            loading.classList.remove('hidden');
-            confirmation.classList.add('hidden');
-
-            closePop.addEventListener('click', () => {
-                popup.classList.add('hidden');
-            });
-
-            fetch('postulate.php', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => response.json()) // Convertit en JSON
-                .then(data => {
-                    loading.classList.add('hidden');
-                    confirmation.classList.remove('hidden');
-
-                    // Affiche le message de retour du serveur
-                    confirmationMessage.textContent = data.message;
-                    confirmationMessage.classList.remove("text-green-600", "text-red-600");
-
-                    if (data.status === "success") {
-                        confirmationMessage.classList.add("text-green-600");
-                    } else {
-                        confirmationMessage.classList.add("text-red-600");
-                    }
-
-                    // Ferme la pop-up après 3 secondes
-                    setTimeout(() => {
-                        popup.classList.add('hidden');
-                    }, 3000);
-                })
-                .catch(error => {
-                    loading.classList.add('hidden');
-                    confirmation.classList.remove('hidden');
-                    confirmationMessage.textContent = "Erreur réseau. Réessayez.";
-                    confirmationMessage.classList.add("text-red-600");
-
-                    setTimeout(() => {
-                        popup.classList.add('hidden');
-                    }, 3000);
-                });
-        });
+// Fonction pour afficher la notification XP
+function showXPNotification(points, message) {
+    const notification = document.createElement('div');
+    notification.className = 'xp-notification';
+    notification.innerHTML = `
+        <div class="icon">+</div>
+        <div class="content">
+            <div class="points">+${points} XP</div>
+            <div class="reason">${message}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animation d'affichage
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // Suppression après 3 secondes
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
     </script>
     <script>
         let associationName = "<?php echo $associationName; ?>";
