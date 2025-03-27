@@ -88,48 +88,61 @@
         border-bottom: 2px solid #4a6cf7;
     }
 
-    .xp-notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #4a6cf7, #6a88ff);
-        color: white;
-        padding: 12px 16px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        transform: translateX(120%);
-        transition: transform 0.3s ease;
-        z-index: 1000;
-        box-shadow: 0 4px 12px rgba(74, 108, 247, 0.2);
-    }
+   /* Remplacez le style existant de la notification XP (vers la ligne 107) par ceci : */
+.xp-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #4a6cf7, #6a88ff);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(74, 108, 247, 0.2);
+    max-width: 300px; /* Ajout de cette ligne pour limiter la largeur */
+    width: auto; /* Ajout de cette ligne pour s'assurer que la popup prend la largeur de son contenu */
+}
 
-    .xp-notification.show {
-        transform: translateX(0);
-    }
+.xp-notification.show {
+    transform: translateX(0);
+}
 
-    .xp-notification .icon {
-        background: rgba(255, 255, 255, 0.2);
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 12px;
-        font-weight: bold;
-        font-size: 18px;
-    }
+.xp-notification .icon {
+    background: rgba(255, 255, 255, 0.2);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-weight: bold;
+    font-size: 18px;
+    flex-shrink: 0; /* Ajout de cette ligne pour éviter que l'icône ne se rétrécisse */
+}
 
-    .xp-notification .points {
-        font-weight: bold;
-        font-size: 16px;
-    }
+.xp-notification .content {
+    flex: 1; /* Ajout de cette ligne pour que le contenu prenne l'espace disponible */
+    overflow: hidden; /* Empêcher le débordement du texte */
+}
 
-    .xp-notification .reason {
-        font-size: 12px;
-        opacity: 0.9;
-    }
+.xp-notification .points {
+    font-weight: bold;
+    font-size: 16px;
+    white-space: nowrap; /* Éviter que le texte se brise sur plusieurs lignes */
+}
+
+.xp-notification .reason {
+    font-size: 12px;
+    opacity: 0.9;
+    white-space: nowrap; /* Éviter que le texte se brise sur plusieurs lignes */
+    text-overflow: ellipsis; /* Ajouter des points de suspension si le texte déborde */
+    overflow: hidden; /* Cacher le texte qui déborde */
+}
 </style>
 
 <body class="bg-gray-50">

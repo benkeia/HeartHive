@@ -261,19 +261,8 @@ include '../backend/db.php';
                                     `;
 
                                     div.addEventListener('click', () => {
-                                        // Utiliser la même méthode que dans index.php
-                                        fetch("set_session.php", {
-                                                method: "POST",
-                                                headers: {
-                                                    "Content-Type": "application/x-www-form-urlencoded"
-                                                },
-                                                body: "association_id=" + association.association_id
-                                            })
-                                            .then(response => response.text())
-                                            .then(() => {
-                                                window.location.href = "association.php"; // Redirection après stockage
-                                            })
-                                            .catch(error => console.error("Erreur lors de l'envoi de l'ID :", error));
+                                        // MODIFICATION : Redirection directe avec paramètre GET
+                                        window.location.href = "association.php?id=" + association.association_id;
                                     });
 
                                     associationList.appendChild(div);

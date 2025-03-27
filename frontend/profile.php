@@ -760,8 +760,8 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
       
       <form id="viewForm_<?php echo $asso['association_id']; ?>" method="post" action="set_session.php" class="inline-block">
         <input type="hidden" name="association_id" value="<?php echo $asso['association_id']; ?>">
-        <button type="button" onclick="submitAndRedirect(<?php echo $asso['association_id']; ?>)"
-          class="gradient-btn py-1 px-4 text-sm">Voir détails</button>
+<a href="association.php?id=<?php echo $asso['association_id']; ?>" 
+   class="gradient-btn py-1 px-4 text-sm">Voir détails</a>
       </form>
     </div>
   </div>
@@ -1121,10 +1121,26 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
       10 => "Bénévole Mythique"
   ];
 
-  // Calculer le pourcentage pour la barre de progression
-  $prev_level_xp = 0; // XP minimale du niveau actuel
+  // Seuils de niveaux
+  $levels = [
+      1 => 0,
+      2 => 100,
+      3 => 250,
+      4 => 500,
+      5 => 1000,
+      6 => 2000,
+      7 => 3500,
+      8 => 5000,
+      9 => 7500,
+      10 => 10000
+  ];
+
+  $current_level = $xp_data['current_level'];
+  $prev_level_xp = $levels[$current_level]; // XP minimale du niveau actuel
   $next_level_xp = $xp_data['points_to_next_level']; // XP minimale du niveau suivant
-  $current_level_progress = ($xp_data['total_points'] - $prev_level_xp) / ($next_level_xp - $prev_level_xp) * 100;
+
+  // Calculer le pourcentage de progression entre niveau actuel et suivant
+  $current_level_progress = (($xp_data['total_points'] - $prev_level_xp) / ($next_level_xp - $prev_level_xp)) * 100;
   $current_level_progress = min(100, max(0, $current_level_progress)); // Limiter entre 0 et 100%
 
   $level_name = isset($level_names[$xp_data['current_level']]) ? $level_names[$xp_data['current_level']] : "Niveau " . $xp_data['current_level'];
