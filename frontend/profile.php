@@ -871,7 +871,7 @@ if (isset($level_update['updated']) && $level_update['updated']) {
             </svg>
             <h3 class="text-lg font-medium text-gray-600">Vous n'êtes pas encore engagé dans une association</h3>
             <p class="text-gray-500 mt-2 mb-6">Rejoignez une association pour commencer votre parcours bénévole</p>
-            <a href="associations.php" class="gradient-btn py-2 px-6">
+            <a href="index.php" class="gradient-btn py-2 px-6">
               Découvrir les associations
             </a>
           </div>
