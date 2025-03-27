@@ -39,11 +39,11 @@ if ($applications_table_exists) {
     // Si la table existe, récupérer les candidatures
     try {
         $stmt = $conn->prepare("
-            SELECT a.*, u.first_name, u.last_name, u.email, u.profile_picture, u.bio
+            SELECT a.*, u.user_firstname as first_name, u.user_name as last_name, u.user_mail as email, u.user_profile_picture as profile_picture, u.user_bio as bio
             FROM applications a
-            JOIN users u ON a.user_id = u.id
+            JOIN user u ON a.volunteer_id = u.user_id
             WHERE a.mission_id = ?
-            ORDER BY a.created_at DESC
+            ORDER BY a.application_date DESC
         ");
         $stmt->bind_param("i", $mission_id);
         $stmt->execute();
@@ -56,8 +56,28 @@ if ($applications_table_exists) {
             }
         }
     } catch (Exception $e) {
-        // En cas d'erreur, on continue avec un tableau vide
+        error_log("Erreur lors de la récupération des candidatures: " . $e->getMessage());
     }
+
+    echo "<!-- Début du débogage -->";
+    echo "<!-- Table applications existe: " . ($applications_table_exists ? 'Oui' : 'Non') . " -->";
+    echo "<!-- Mission ID: " . $mission_id . " -->";
+
+    // Compter manuellement les candidatures
+    $debug_query = "SELECT COUNT(*) as count FROM applications WHERE mission_id = ?";
+    $debug_stmt = $conn->prepare($debug_query);
+    $debug_stmt->bind_param("i", $mission_id);
+    $debug_stmt->execute();
+    $debug_result = $debug_stmt->get_result();
+    $debug_count = $debug_result->fetch_assoc()['count'];
+    echo "<!-- Nombre de candidatures trouvées directement en SQL: " . $debug_count . " -->";
+
+    // Vérifier le contenu de $applications
+    echo "<!-- Nombre d'applications dans le tableau PHP: " . count($applications) . " -->";
+    if (count($applications) > 0) {
+        echo "<!-- Première application: " . json_encode($applications[0]) . " -->";
+    }
+    echo "<!-- Fin du débogage -->";
 }
 
 // Utiliser volunteers_registered si disponible, sinon calculer à partir des candidatures
@@ -198,6 +218,19 @@ $tags = json_decode($mission['tags'], true) ?: [];
                 transform: translateY(0);
             }
         }
+
+        /* Styles pour le modal de profil utilisateur */
+        #userProfileModal {
+            transition: opacity 0.3s ease;
+        }
+
+        .bg-custom-pink {
+            background-color: #ffb3e4;
+        }
+
+        .hover\:bg-pink-600:hover {
+            background-color: #db2777;
+        }
     </style>
 </head>
 
@@ -332,7 +365,7 @@ $tags = json_decode($mission['tags'], true) ?: [];
                                                     <h3 class="text-sm font-medium text-gray-900">
                                                         <?php echo htmlspecialchars($app['first_name'] . ' ' . $app['last_name']); ?>
                                                     </h3>
-                                                    <p class="text-xs text-gray-500"><?php echo date('d/m/Y à H:i', strtotime($app['created_at'])); ?></p>
+                                                    <p class="text-xs text-gray-500"><?php echo date('d/m/Y à H:i', strtotime($app['application_date'])); ?></p>
                                                 </div>
                                             </div>
                                             <div>
@@ -360,24 +393,24 @@ $tags = json_decode($mission['tags'], true) ?: [];
 
                                         <?php if ($app['status'] == 'pending'): ?>
                                             <div class="mt-3 flex justify-end space-x-2">
-                                                <button onclick="updateApplication(<?php echo $app['id']; ?>, 'accepted', <?php echo $places_remaining; ?>)"
+                                                <button onclick="updateApplication(<?php echo $app['application_id']; ?>, 'accepted', <?php echo $places_remaining; ?>)"
                                                     class="text-sm px-3 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200"
                                                     <?php echo $places_remaining <= 0 ? 'disabled' : ''; ?>>
                                                     <i class="fas fa-check mr-1"></i>Accepter
                                                 </button>
-                                                <button onclick="updateApplication(<?php echo $app['id']; ?>, 'rejected')"
+                                                <button onclick="updateApplication(<?php echo $app['application_id']; ?>, 'rejected')"
                                                     class="text-sm px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200">
                                                     <i class="fas fa-times mr-1"></i>Refuser
                                                 </button>
                                             </div>
-                                        <?php endif; ?>
 
-                                        <div class="mt-2">
-                                            <button onclick="viewUserProfile(<?php echo $app['user_id']; ?>)"
-                                                class="text-xs text-pink-600 hover:text-pink-800 flex items-center">
-                                                <i class="fas fa-user mr-1"></i>Voir le profil
-                                            </button>
-                                        </div>
+                                            <div class="mt-2">
+                                                <button onclick="viewUserProfile(<?php echo $app['volunteer_id']; ?>)"
+                                                    class="text-xs text-pink-600 hover:text-pink-800 flex items-center">
+                                                    <i class="fas fa-user mr-1"></i>Voir le profil
+                                                </button>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -507,6 +540,10 @@ $tags = json_decode($mission['tags'], true) ?: [];
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
+                                // Si la candidature est acceptée, envoyer un message automatique
+                                if (status === 'accepted') {
+                                    sendAutomaticMessage(data.user_id, <?php echo $mission_id; ?>);
+                                }
                                 // Recharger la page pour afficher les changements
                                 location.reload();
                             } else {
@@ -518,6 +555,33 @@ $tags = json_decode($mission['tags'], true) ?: [];
                             alert('Une erreur est survenue lors de la mise à jour de la candidature.');
                         });
                 }
+            }
+
+            // Fonction pour envoyer un message automatique à l'utilisateur
+            function sendAutomaticMessage(userId, missionId) {
+                // Récupérer les informations de la mission depuis le contexte PHP
+                const missionTitle = <?php echo json_encode(htmlspecialchars($mission['title'])); ?>;
+
+                const formData = new FormData();
+                formData.append('receiver_id', userId);
+                formData.append('message', `Félicitations ! Votre candidature pour la mission "${missionTitle}" a été acceptée. Vous recevrez prochainement plus d'informations sur les prochaines étapes.`);
+
+                // Envoyer le message
+                fetch('../backend/send_message.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Message automatique envoyé avec succès');
+                        } else {
+                            console.error('Erreur lors de l\'envoi du message:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur technique:', error);
+                    });
             }
 
             // Fonction pour voir le profil d'un bénévole
@@ -582,7 +646,58 @@ $tags = json_decode($mission['tags'], true) ?: [];
             // Fonction pour contacter un bénévole
             function contactUser(userId) {
                 // Rediriger vers la messagerie
-                window.location.href = `messaging.php?to=${userId}`;
+                window.location.href = `messages.php?user=${userId}`;
+            }
+
+            // Ajouter après les autres fonctions JavaScript
+
+            function viewUserProfile(userId) {
+                // Afficher un modal avec les informations du profil utilisateur
+                fetch(`../backend/get_user_profile.php?id=${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Créer un modal pour afficher les informations utilisateur
+                            const modal = document.createElement('div');
+                            modal.id = 'userProfileModal';
+                            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+
+                            const user = data.user;
+                            modal.innerHTML = `
+                                <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <h2 class="text-xl font-semibold">Profil de ${user.first_name} ${user.last_name}</h2>
+                                        <button onclick="document.getElementById('userProfileModal').remove()" class="text-gray-500 hover:text-gray-700">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="mb-4 flex items-center">
+                                        <img src="${user.profile_picture || 'assets/img/default-avatar.png'}" class="w-16 h-16 rounded-full object-cover mr-4">
+                                        <div>
+                                            <h3 class="font-semibold">${user.first_name} ${user.last_name}</h3>
+                                            <p class="text-sm text-gray-500">${user.email}</p>
+                                        </div>
+                                    </div>
+                                    ${user.bio ? `<div class="mb-4">
+                                        <h4 class="font-medium text-sm text-gray-700 mb-1">Bio</h4>
+                                        <p class="text-gray-600">${user.bio}</p>
+                                    </div>` : ''}
+                                    <div class="flex justify-end mt-4">
+                                        <a href="messages.php?user=${user.id}" class="bg-custom-pink hover:bg-pink-600 text-white px-4 py-2 rounded-md">
+                                            <i class="fas fa-envelope mr-2"></i>Contacter
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+                            document.body.appendChild(modal);
+                        } else {
+                            showNotification('Erreur lors du chargement du profil: ' + data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        showNotification('Une erreur est survenue lors du chargement du profil', 'error');
+                    });
             }
         <?php endif; ?>
     </script>

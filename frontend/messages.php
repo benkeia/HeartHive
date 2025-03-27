@@ -9,51 +9,59 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Remplacer la requête existante par celle-ci :
+// Requête pour récupérer TOUTES les conversations (envoyées ET reçues)
 $query = "SELECT 
-            u.user_id,
-            u.user_name,
-            u.user_profile_picture,
-            latest_messages.message_content as last_message,
-            latest_messages.created_at,
+            other_user.user_id,
+            other_user.user_firstname,
+            other_user.user_name,
+            other_user.user_profile_picture,
+            latest_msgs.message_content as last_message,
+            latest_msgs.created_at,
             (SELECT COUNT(*) FROM messages 
-             WHERE sender_id = u.user_id 
+             WHERE sender_id = other_user.user_id 
              AND receiver_id = ? 
              AND is_read = 0) as unread_count
-          FROM user u
-          INNER JOIN (
-              SELECT 
-                  CASE 
-                      WHEN sender_id = ? THEN receiver_id
-                      ELSE sender_id 
-                  END as conversation_user_id,
-                  message_content,
-                  created_at,
-                  sender_id,
-                  receiver_id
-              FROM messages m1
-              WHERE created_at = (
-                  SELECT MAX(created_at)
-                  FROM messages m2
-                  WHERE (m2.sender_id = m1.sender_id AND m2.receiver_id = m1.receiver_id)
-                     OR (m2.sender_id = m1.receiver_id AND m2.receiver_id = m1.sender_id)
-              )
-              AND (sender_id = ? OR receiver_id = ?)
-          ) latest_messages ON u.user_id = latest_messages.conversation_user_id
-          WHERE u.user_id != ?
-          ORDER BY latest_messages.created_at DESC";
+          FROM
+            (SELECT 
+                CASE 
+                    WHEN sender_id = ? THEN receiver_id
+                    WHEN receiver_id = ? THEN sender_id
+                END AS other_user_id,
+                MAX(message_id) as latest_message_id
+             FROM messages
+             WHERE sender_id = ? OR receiver_id = ?
+             GROUP BY other_user_id) AS conv
+          JOIN user AS other_user ON other_user.user_id = conv.other_user_id
+          JOIN messages AS latest_msgs ON latest_msgs.message_id = conv.latest_message_id
+          ORDER BY latest_msgs.created_at DESC";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param(
-    "iiiii",
-    $user_id,  // Pour unread_count
-    $user_id,  // Pour le CASE
-    $user_id,  // Pour le OR condition 1
-    $user_id,  // Pour le OR condition 2
-    $user_id   // Pour le WHERE final
-);
+$stmt->bind_param("iiiii", $user_id, $user_id, $user_id, $user_id, $user_id);
 $stmt->execute();
 $conversations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// Ajouter un code de débogage après l'exécution de la requête
+echo "<!-- NOUVELLE requête: " . count($conversations) . " conversations trouvées -->";
+
+// Ajouter après la ligne $conversations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// Vérifier TOUS les messages pour cet utilisateur
+$debug_messages_query = "SELECT * FROM messages WHERE sender_id = ? OR receiver_id = ? ORDER BY created_at DESC LIMIT 10";
+$debug_stmt = $conn->prepare($debug_messages_query);
+$debug_stmt->bind_param("ii", $user_id, $user_id);
+$debug_stmt->execute();
+$debug_messages = $debug_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+echo "<!-- Messages existants pour l'utilisateur " . $user_id . ": " . count($debug_messages) . " -->";
+foreach ($debug_messages as $msg) {
+    echo "<!-- Message " . $msg['message_id'] . " - De: " . $msg['sender_id'] . " À: " . $msg['receiver_id'] . " -->";
+}
+
+// Ajoutez du code de débogage temporaire
+echo "<!-- Debug conversations: " . count($conversations) . " trouvées -->";
+foreach ($conversations as $index => $c) {
+    echo "<!-- Conversation " . $index . ": avec user " . $c['user_id'] . " -->";
+}
 
 // Si un utilisateur est sélectionné, récupérer les messages
 $selected_user = null;
@@ -90,6 +98,17 @@ if (isset($_GET['user']) && is_numeric($_GET['user'])) {
         $update_stmt->bind_param("ii", $selected_user_id, $user_id);
         $update_stmt->execute();
     }
+}
+
+// Ajouter ce code après avoir récupéré les messages d'une conversation
+
+if (isset($_GET['user']) && is_numeric($_GET['user'])) {
+    $receiver_id = (int)$_GET['user'];
+
+    // Marquer les messages de cette conversation comme lus
+    $markRead = $conn->prepare("UPDATE messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ?");
+    $markRead->bind_param("ii", $receiver_id, $_SESSION['user_id']);
+    $markRead->execute();
 }
 ?>
 
@@ -167,7 +186,9 @@ if (isset($_GET['user']) && is_numeric($_GET['user'])) {
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <div class="flex justify-between items-baseline">
-                                                <h3 class="text-sm font-semibold text-gray-900"><?php echo htmlspecialchars($conv['user_name']); ?></h3>
+                                                <h3 class="text-sm font-semibold text-gray-900">
+                                                    <?php echo htmlspecialchars($conv['user_firstname'] . ' ' . $conv['user_name']); ?>
+                                                </h3>
                                                 <span class="text-xs text-gray-500">
                                                     <?php echo date('H:i', strtotime($conv['created_at'])); ?>
                                                 </span>
@@ -338,6 +359,164 @@ if (isset($_GET['user']) && is_numeric($_GET['user'])) {
                     .replace(/"/g, "&quot;")
                     .replace(/'/g, "&#039;");
             }
+        });
+    </script>
+    <script>
+        // Fonction pour vérifier les nouveaux messages
+        let lastCheckTimestamp = <?php echo time(); ?>;
+
+        function checkNewMessages() {
+            // Ajouter un timestamp aléatoire pour éviter le cache
+            const cacheBuster = Math.floor(Math.random() * 10000);
+
+            fetch(`../backend/check_new_conversations.php?last_check=${lastCheckTimestamp}&_=${cacheBuster}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erreur réseau: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    // Vérifier si le texte est vide
+                    if (!text || text.trim() === '') {
+                        console.error('Réponse vide du serveur');
+                        return;
+                    }
+
+                    // Vérifier si le texte retourné est du JSON valide
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.success) {
+                            lastCheckTimestamp = data.current_timestamp;
+
+                            if (data.conversations && data.conversations.length > 0) {
+                                updateConversationsList(data.conversations);
+                            }
+                        } else {
+                            console.error('Erreur du serveur:', data.message || 'Erreur inconnue');
+                        }
+                    } catch (e) {
+                        console.error('Réponse non JSON:', text.substring(0, 100) + '...');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la vérification des messages:', error);
+                    // Attendre plus longtemps avant la prochaine tentative en cas d'erreur
+                    // Pour éviter de surcharger le serveur en cas de problème
+                });
+        }
+
+        function updateConversationsList(newConversations) {
+            const conversationsContainer = document.querySelector('.overflow-y-auto.h-\\[calc\\(100\\%-73px\\)]');
+
+            if (!conversationsContainer) return;
+
+            // Vérifier si le conteneur affiche "Aucune conversation trouvée"
+            const noConversationsElement = conversationsContainer.querySelector('.p-4.text-center.text-gray-500');
+
+            if (noConversationsElement) {
+                // S'il n'y a pas de conversations, remplacer par les nouvelles
+                conversationsContainer.innerHTML = '';
+            }
+
+            newConversations.forEach(conv => {
+                // Vérifier si cette conversation existe déjà
+                const existingConv = document.querySelector(`a[href="?user=${conv.user_id}"]`);
+
+                if (existingConv) {
+                    // Mettre à jour la conversation existante
+                    const messagePreview = existingConv.querySelector('p');
+                    const timeElement = existingConv.querySelector('.text-xs.text-gray-500');
+                    const unreadBadge = existingConv.querySelector('.absolute.-top-1.-right-1');
+
+                    if (messagePreview) messagePreview.textContent = conv.last_message;
+                    if (timeElement) timeElement.textContent = conv.formatted_time;
+
+                    // Mettre à jour le badge de messages non lus
+                    if (conv.unread_count > 0) {
+                        if (unreadBadge) {
+                            unreadBadge.textContent = conv.unread_count;
+                        } else {
+                            const imgContainer = existingConv.querySelector('.relative');
+                            if (imgContainer) {
+                                const badge = document.createElement('span');
+                                badge.className = 'absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full';
+                                badge.textContent = conv.unread_count;
+                                imgContainer.appendChild(badge);
+                            }
+                        }
+                    }
+
+                    // Déplacer la conversation en haut de la liste
+                    conversationsContainer.insertBefore(existingConv, conversationsContainer.firstChild);
+                } else {
+                    // Créer un nouvel élément pour cette conversation
+                    const newConvElement = document.createElement('a');
+                    newConvElement.href = `?user=${conv.user_id}`;
+                    newConvElement.className = 'block p-4 hover:bg-gray-50 cursor-pointer';
+
+                    newConvElement.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="relative">
+                            <img src="${conv.user_profile_picture}" alt="Profile" class="w-12 h-12 rounded-full object-cover">
+                            ${conv.unread_count > 0 ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                                ${conv.unread_count}
+                            </span>` : ''}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-baseline">
+                                <h3 class="text-sm font-semibold text-gray-900">
+                                    ${conv.user_firstname} ${conv.user_name}
+                                </h3>
+                                <span class="text-xs text-gray-500">
+                                    ${conv.formatted_time}
+                                </span>
+                            </div>
+                            <p class="text-sm ${conv.unread_count > 0 ? 'font-semibold text-gray-900' : 'text-gray-500'} truncate">
+                                ${conv.last_message}
+                            </p>
+                        </div>
+                    </div>
+                `;
+
+                    // Ajouter au début de la liste
+                    conversationsContainer.insertBefore(newConvElement, conversationsContainer.firstChild);
+                }
+            });
+
+            // Jouer un son de notification
+            playNotificationSound();
+        }
+
+        function playNotificationSound() {
+            // Créer un élément audio pour jouer le son de notification
+            const audio = new Audio('../assets/sounds/notification.mp3');
+            audio.volume = 0.5;
+            audio.play().catch(e => console.log('Notification audio failed to play:', e));
+        }
+
+        // Vérifier les nouveaux messages toutes les 10 secondes
+        document.addEventListener('DOMContentLoaded', function() {
+            // On attend 10 secondes avant la première vérification
+            setTimeout(() => {
+                checkNewMessages();
+                // Ensuite, vérifier régulièrement
+                setInterval(checkNewMessages, 10000);
+            }, 10000);
+        });
+    </script>
+    <script>
+        // Remplacer l'initialisation existante à la fin du fichier
+
+        // Vérifier les nouveaux messages
+        document.addEventListener('DOMContentLoaded', function() {
+            // Première vérification après 5 secondes pour laisser le temps à la page de se charger
+            setTimeout(() => {
+                checkNewMessages();
+                // Puis vérifier régulièrement toutes les 20 secondes
+                // (intervalle plus long pour réduire la charge serveur)
+                setInterval(checkNewMessages, 20000);
+            }, 5000);
         });
     </script>
 </body>
