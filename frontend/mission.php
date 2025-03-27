@@ -316,25 +316,25 @@ $status_labels = [
 
                 <!-- Disponibilités -->
                 <?php if ($availability): ?>
-                    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Disponibilités requises</h2>
-                        <ul class="list-disc pl-5">
-                            <?php foreach ($availability as $day => $slots): ?>
-                                <?php if (!empty($slots)): ?>
-                                    <li class="mb-2">
-                                        <strong><?php echo htmlspecialchars(ucfirst($day)); ?> :</strong>
-                                        <?php
-                                        $formatted_slots = array_map(function ($slot) {
-                                            return $slot . 'h';
-                                        }, $slots);
-                                        echo htmlspecialchars(implode(', ', $formatted_slots));
-                                        ?>
-                                    </li>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Disponibilités requises</h2>
+        <ul class="list-disc pl-5">
+            <?php foreach ($availability as $day): ?>
+                <?php if (isset($day['day']) && isset($day['hours']) && is_array($day['hours'])): ?>
+                    <li class="mb-2">
+                        <strong><?php echo htmlspecialchars(ucfirst($day['day'])); ?> :</strong>
+                        <?php
+                        $formatted_slots = array_map(function ($slot) {
+                            return $slot; // Le format est déjà correct
+                        }, $day['hours']);
+                        echo htmlspecialchars(implode(', ', $formatted_slots));
+                        ?>
+                    </li>
                 <?php endif; ?>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
 
                 <!-- Informations pratiques -->
                 <div class="bg-white rounded-lg shadow-md p-6 mb-6">
