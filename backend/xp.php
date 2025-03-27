@@ -25,10 +25,10 @@ $xp_values = [
     'set_availability' => 15,
     'first_login' => 30,
     'daily_login' => 5,
-
-    'apply_association' => 25,     // Candidature à une association
-    'accepted_association' => 75,  // Accepté dans une association
-    'complete_mission' => 100,     // Mission accomplie
+    'apply_association' => 25,
+    'accepted_association' => 75,
+    'complete_mission' => 100,
+    'add_certification' => 20,
 ];
 
 // Si l'action n'existe pas dans notre tableau
@@ -40,36 +40,36 @@ if (!isset($xp_values[$action])) {
 // Points à attribuer
 $points = $xp_values[$action];
 
-// Par ce code modifié:
-    if ($action != 'update_profile' && $action != 'add_skill' && $action != 'add_interest' && $action != 'daily_login' && $action != 'apply_association') {
-        $check = $conn->prepare("SELECT * FROM experience_transactions WHERE user_id = ? AND reason = ?");
-        $check->bind_param("is", $user_id, $action);
-        $check->execute();
-        $result = $check->get_result();
-        
-        if ($result->num_rows > 0) {
-            echo json_encode([
-                'status' => 'info', 
-                'message' => 'Points déjà attribués pour cette action'
-            ]);
-            exit;
-        }
-    } 
-    // Vérification spéciale pour la candidature à une association
-    else if ($action == 'apply_association') {
-        $check = $conn->prepare("SELECT * FROM experience_transactions WHERE user_id = ? AND reason = ? AND related_entity_type = ?");
-        $check->bind_param("iss", $user_id, $action, $details);
-        $check->execute();
-        $result = $check->get_result();
-        
-        if ($result->num_rows > 0) {
-            echo json_encode([
-                'status' => 'info', 
-                'message' => 'Points déjà attribués pour cette association'
-            ]);
-            exit;
-        }
+// Vérifier si cette action n'est pas répétable et si elle a déjà été faite
+if ($action != 'update_profile' && $action != 'add_skill' && $action != 'add_interest' && $action != 'daily_login' && $action != 'apply_association' && $action != 'add_certification') {
+    $check = $conn->prepare("SELECT * FROM experience_transactions WHERE user_id = ? AND reason = ?");
+    $check->bind_param("is", $user_id, $action);
+    $check->execute();
+    $result = $check->get_result();
+    
+    if ($result->num_rows > 0) {
+        echo json_encode([
+            'status' => 'info', 
+            'message' => 'Points déjà attribués pour cette action'
+        ]);
+        exit;
     }
+} 
+// Vérification spéciale pour la candidature à une association
+else if ($action == 'apply_association' || $action == 'add_certification') {
+    $check = $conn->prepare("SELECT * FROM experience_transactions WHERE user_id = ? AND reason = ? AND related_entity_type = ?");
+    $check->bind_param("iss", $user_id, $action, $details);
+    $check->execute();
+    $result = $check->get_result();
+    
+    if ($result->num_rows > 0) {
+        echo json_encode([
+            'status' => 'info', 
+            'message' => 'Points déjà attribués pour cette action spécifique'
+        ]);
+        exit;
+    }
+}
 
 // Si c'est une connexion quotidienne, vérifier si c'est déjà fait aujourd'hui
 if ($action == 'daily_login') {
@@ -118,30 +118,16 @@ try {
     }
     $stmt->execute();
     
-    // Vérifier le niveau
-    check_level_up($conn, $user_id, $new_total);
+    // === DÉBUT DU CODE CORRIGÉ ===
+    // Récupérer les données actuelles de l'utilisateur pour obtenir l'ancien niveau
+    $stmt = $conn->prepare("SELECT current_level FROM user_experience WHERE user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $old_data = $result->fetch_assoc();
+    $old_level = $old_data['current_level'];
     
-    // Valider la transaction
-    $conn->commit();
-    
-    echo json_encode([
-        'status' => 'success', 
-        'message' => 'Points d\'expérience ajoutés avec succès',
-        'points' => $points,
-        'total' => $new_total
-    ]);
-    
-} catch (Exception $e) {
-    // Annuler la transaction en cas d'erreur
-    $conn->rollback();
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-}
-
-/**
- * Vérifie si l'utilisateur monte de niveau
- */
-function check_level_up($conn, $user_id, $total_points) {
-    // Seuils de niveaux
+    // Définir les seuils de niveaux
     $levels = [
         1 => 0,
         2 => 100,
@@ -155,42 +141,37 @@ function check_level_up($conn, $user_id, $total_points) {
         10 => 10000
     ];
     
-    // Récupérer le niveau actuel de l'utilisateur
-    $stmt = $conn->prepare("SELECT current_level FROM user_experience WHERE user_id = ?");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $current_data = $result->fetch_assoc();
-    $old_level = $current_data['current_level'];
-    
-    // Déterminer le nouveau niveau actuel
+    // Calculer le nouveau niveau en fonction des points totaux
     $new_level = 1;
-    $next_level_points = 100;
-    
     foreach ($levels as $level => $threshold) {
-        if ($total_points >= $threshold) {
+        if ($new_total >= $threshold) {
             $new_level = $level;
         } else {
-            $next_level_points = $threshold;
             break;
         }
     }
     
-    // Mettre à jour le niveau
-    $stmt = $conn->prepare("UPDATE user_experience SET current_level = ?, points_to_next_level = ? WHERE user_id = ?");
-    $stmt->bind_param("iii", $new_level, $next_level_points, $user_id);
-    $stmt->execute();
+    // Calculer les points requis pour le niveau suivant
+    $next_level = $new_level + 1;
+    $next_level_points = isset($levels[$next_level]) ? $levels[$next_level] : 999999;
     
-    // Vérifier si l'utilisateur a gagné un niveau
+    // Mettre à jour le niveau dans la base de données
+    $update = $conn->prepare("UPDATE user_experience SET current_level = ?, points_to_next_level = ? WHERE user_id = ?");
+    $update->bind_param("iii", $new_level, $next_level_points, $user_id);
+    $update->execute();
+    
+    // Vérifier si l'utilisateur a monté de niveau
     $level_up = ($new_level > $old_level);
+    // === FIN DU CODE CORRIGÉ ===
     
+    // Valider la transaction
+    $conn->commit();
+    
+    // Réponse différente si l'utilisateur a monté de niveau
     if ($level_up) {
         // Ajouter une récompense pour le niveau
         try {
-            $stmt = $conn->prepare("INSERT INTO user_rewards (user_id, reward_type, reward_name, acquired_date) 
-                                   VALUES (?, 'level', ?, NOW())");
-            
-            // Noms des niveaux (à synchroniser avec le frontend)
+            // Noms des niveaux
             $level_names = [
                 1 => "Bénévole Débutant",
                 2 => "Bénévole Actif",
@@ -205,58 +186,40 @@ function check_level_up($conn, $user_id, $total_points) {
             ];
             
             $reward_name = isset($level_names[$new_level]) ? $level_names[$new_level] : "Niveau " . $new_level;
+            
+            $stmt = $conn->prepare("INSERT INTO user_rewards (user_id, reward_type, reward_name, acquired_date) 
+                                   VALUES (?, 'level', ?, NOW())");
             $stmt->bind_param("is", $user_id, $reward_name);
             $stmt->execute();
         } catch (Exception $e) {
-            // Ignorer les erreurs de récompense, juste les logger
-            file_put_contents('level_rewards_error.log', date('Y-m-d H:i:s') . " - " . $e->getMessage() . "\n", FILE_APPEND);
+            // Ignorer les erreurs de récompense
+            error_log("Erreur d'ajout de récompense: " . $e->getMessage());
         }
-    }
-    
-    return [
-        'level_up' => $level_up,
-        'old_level' => $old_level,
-        'new_level' => $new_level
-    ];
-}
-
-// Puis dans la section principale de votre code, modifiez cette partie:
-
-try {
-    // ... reste du code inchangé ...
-    
-    // Vérifier le niveau
-    $level_result = check_level_up($conn, $user_id, $new_total);
-    
-    // Valider la transaction
-    $conn->commit();
-    
-    // Réponse différente si l'utilisateur a monté de niveau
-    if ($level_result['level_up']) {
+        
         echo json_encode([
             'status' => 'success', 
             'message' => 'Points d\'expérience ajoutés avec succès',
             'points' => $points,
             'total' => $new_total,
             'level_up' => true,
-            'old_level' => $level_result['old_level'],
-            'new_level' => $level_result['new_level']
+            'old_level' => $old_level,
+            'new_level' => $new_level,
+            'points_to_next_level' => $next_level_points
         ]);
     } else {
         echo json_encode([
             'status' => 'success', 
             'message' => 'Points d\'expérience ajoutés avec succès',
             'points' => $points,
-            'total' => $new_total
+            'total' => $new_total,
+            'current_level' => $new_level,
+            'points_to_next_level' => $next_level_points
         ]);
     }
-} catch (Exception $e) {
-    // ... reste du code inchangé ...
-    // Mettre à jour le niveau
-    $stmt = $conn->prepare("UPDATE user_experience SET current_level = ?, points_to_next_level = ? WHERE user_id = ?");
-    $stmt->bind_param("iii", $current_level, $next_level_points, $user_id);
-    $stmt->execute();
-}
     
-
+} catch (Exception $e) {
+    // Annuler la transaction en cas d'erreur
+    $conn->rollback();
+    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+}
 ?>

@@ -17,6 +17,83 @@ if (!isset($_SESSION['user_id'])) {
 
 // Récupérer les tags de l'utilisateur s'ils existent
 $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
+
+function auto_update_xp_level() {
+  global $conn;
+  
+  if (!isset($_SESSION['user_id'])) {
+      return false;
+  }
+  
+  $user_id = $_SESSION['user_id'];
+  
+  // Récupérer les points totaux de l'utilisateur
+  $stmt = $conn->prepare("SELECT * FROM user_experience WHERE user_id = ?");
+  $stmt->bind_param("i", $user_id);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  
+  if ($result->num_rows > 0) {
+      $xp_data = $result->fetch_assoc();
+      $total_points = $xp_data['total_points'];
+      
+      // Définir les seuils de niveaux
+      $levels = [
+          1 => 0,
+          2 => 100,
+          3 => 250,
+          4 => 500,
+          5 => 1000,
+          6 => 2000,
+          7 => 3500,
+          8 => 5000,
+          9 => 7500,
+          10 => 10000
+      ];
+      
+      // Calculer le niveau correct en fonction des points totaux
+      $correct_level = 1;
+      foreach ($levels as $level => $threshold) {
+          if ($total_points >= $threshold) {
+              $correct_level = $level;
+          } else {
+              break;
+          }
+      }
+      
+      // Calculer les points requis pour le niveau suivant
+      $next_level = $correct_level + 1;
+      $next_level_points = isset($levels[$next_level]) ? $levels[$next_level] : 999999;
+      
+      // Si le niveau est incorrect, mettre à jour
+      if ($correct_level != $xp_data['current_level'] || $next_level_points != $xp_data['points_to_next_level']) {
+          $update = $conn->prepare("UPDATE user_experience SET current_level = ?, points_to_next_level = ? WHERE user_id = ?");
+          $update->bind_param("iii", $correct_level, $next_level_points, $user_id);
+          $update->execute();
+          
+          // Retourner les nouvelles valeurs
+          return [
+              'updated' => true,
+              'new_level' => $correct_level,
+              'old_level' => $xp_data['current_level'],
+              'points_to_next_level' => $next_level_points
+          ];
+      }
+  }
+  
+  return ['updated' => false];
+}
+
+// Exécuter la mise à jour automatique à chaque chargement de la page
+$level_update = auto_update_xp_level();
+
+// Si le niveau a été mis à jour, afficher une notification
+if (isset($level_update['updated']) && $level_update['updated']) {
+  // Stocker l'information dans une variable pour l'utiliser dans le JavaScript plus tard
+  $show_level_update = true;
+  $new_level = $level_update['new_level'];
+  $old_level = $level_update['old_level'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -186,12 +263,34 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
         transform: translateY(0);
       }
     }
+    @keyframes pulse-slow {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.05); opacity: 0.7; }
+  }
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
+  
+  @keyframes spin-slow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .animate-spin-slow {
+    animation: spin-slow 15s linear infinite;
+  }
 
     /* Style pour la liste des associations */
     #associationsList .gradient-btn {
       font-size: 0.875rem;
       padding: 0.5rem 1rem;
     }
+
+    .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
   </style>
 </head>
 
@@ -650,165 +749,159 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
     <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes associations</h2>
 
     <!-- Liste des associations -->
-    <!-- Liste des associations -->
-<div id="associationsList" class="space-y-6">
-  <?php
-  // Récupérer les engagements de l'utilisateur via la table postulation
-  $user_id = $_SESSION['user_id'];
+<!-- Liste des associations -->
+<div id="associationsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <?php
+      // Récupérer les engagements de l'utilisateur via la table postulation
+      $user_id = $_SESSION['user_id'];
 
-  // Utiliser les colonnes qui existent réellement dans votre table
-  $query = "SELECT a.*, p.postulation_id, p.postulation_date 
-            FROM association a 
-            JOIN postulation p ON a.association_id = p.postulation_association_id_fk 
-            WHERE p.postulation_user_id_fk = ? 
-            ORDER BY p.postulation_id DESC";
+      // Utiliser les colonnes qui existent réellement dans votre table
+      $query = "SELECT a.*, p.postulation_id, p.postulation_date 
+                FROM association a 
+                JOIN postulation p ON a.association_id = p.postulation_association_id_fk 
+                WHERE p.postulation_user_id_fk = ? 
+                ORDER BY p.postulation_id DESC";
 
-  try {
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+      try {
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    if ($result && $result->num_rows > 0) {
-      while ($asso = $result->fetch_assoc()) {
-        // Formatage de la date
-        $postulationDate = new DateTime($asso['postulation_date']);
-        $formattedDate = $postulationDate->format('d M Y');
-        
-        // Affichez vos données d'association
-        ?>
-        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-gray-100 overflow-hidden">
-          <div class="flex flex-col md:flex-row">
-            <div class="md:w-1/4 bg-gradient-to-br from-purple-50 to-pink-50 p-4 flex items-center justify-center relative">
-              <img src="<?php echo $asso['association_background_image'] ?>"
-                alt="Logo <?php echo htmlspecialchars($asso['association_name']); ?>"
-                class="w-full h-32 md:h-full object-cover rounded-lg">
-              <div class="absolute top-2 right-2">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-purple-400" fill="currentColor" viewBox="0 0 8 8">
-                    <circle cx="4" cy="4" r="3" />
-                  </svg>
-                  Depuis le <?php echo $formattedDate; ?>
-                </span>
-              </div>
-            </div>
-            
-            <div class="md:w-3/4 p-4">
-              <div class="flex justify-between items-start mb-3">
-                <div>
-                  <h3 class="text-lg font-semibold text-gray-800">
-                    <?php echo htmlspecialchars($asso['association_name']); ?>
-                  </h3>
-                  <?php if(isset($asso['association_address']) && !empty($asso['association_address'])): 
-                    $address = json_decode($asso['association_address'], true);
-                  ?>
-                  <div class="flex items-center text-sm text-gray-500 mt-1">
-                    <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                    <?php echo isset($address['name']) ? htmlspecialchars($address['name']) : 'Adresse non spécifiée'; ?>
-                  </div>
-                  <?php endif; ?>
-                </div>
-                
-                <button class="unfollow-btn text-sm text-gray-500 hover:text-red-500 transition-colors flex items-center" 
-                        data-association-id="<?php echo $asso['association_id']; ?>">
-                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
-                  Ne plus suivre
-                </button>
-              </div>
-              
-              <div class="bg-gray-50 p-3 rounded-lg mb-3">
-                <h4 class="text-sm font-medium text-gray-700 mb-1">À propos</h4>
-                <p class="text-gray-600 text-sm line-clamp-2"><?php echo htmlspecialchars($asso['association_desc']); ?></p>
-              </div>
-              
-              <div class="bg-gray-50 p-3 rounded-lg mb-4">
-                <h4 class="text-sm font-medium text-gray-700 mb-1">Mission</h4>
-                <p class="text-gray-600 text-sm line-clamp-2"><?php echo htmlspecialchars($asso['association_mission']); ?></p>
-              </div>
-              
-              <div class="flex flex-wrap items-center justify-between pt-2 mt-2 border-t border-gray-100">
-                <div class="flex space-x-2">
-                  <?php if(!empty($asso['association_mail'])): ?>
-                  <a href="mailto:<?php echo htmlspecialchars($asso['association_mail']); ?>" 
-                     class="text-gray-500 hover:text-blue-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
-                  </a>
-                  <?php endif; ?>
-                  
-                  <?php if(!empty($asso['association_phone'])): ?>
-                  <a href="tel:<?php echo htmlspecialchars($asso['association_phone']); ?>" 
-                     class="text-gray-500 hover:text-green-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                    </svg>
-                  </a>
-                  <?php endif; ?>
-                </div>
-                
-                <div>
-                  <form id="viewForm_<?php echo $asso['association_id']; ?>" method="post" action="set_session.php"
-                    class="inline-block">
-                    <input type="hidden" name="association_id" value="<?php echo $asso['association_id']; ?>">
-                    <button type="button" onclick="submitAndRedirect(<?php echo $asso['association_id']; ?>)"
-                      class="gradient-btn py-1 px-4 text-sm">Voir détails</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <?php
-      }
+        if ($result && $result->num_rows > 0) {
+          while ($asso = $result->fetch_assoc()) {
+            // Affichez vos données d'association
+            ?>
+
+
+
+
+            <div class="flex flex-col border border-gray-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
+  <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-4 h-40 relative">
+    <img src="<?php echo $asso['association_background_image'] ?>"
+      alt="Logo <?php echo htmlspecialchars($asso['association_name']); ?>"
+      class="w-full h-full object-cover rounded-lg">
       
-      // Ajouter cette section de popup de confirmation pour le désabonnement
-      ?>
-      <div id="unfollowModal" class="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full mx-4">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Confirmer le désabonnement</h3>
-          <p class="text-gray-600 mb-6">Voulez-vous vraiment vous désabonner de cette association ? Vous ne recevrez plus de notifications concernant ses activités et missions.</p>
-          <div class="flex justify-end space-x-3">
-            <button id="cancelUnfollow" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-              Annuler
-            </button>
-            <button id="confirmUnfollow" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-              Confirmer
-            </button>
-          </div>
-          <input type="hidden" id="unfollowAssociationId" value="">
-        </div>
-      </div>
-      <?php
-    } else {
-      ?>
-      <div class="text-center py-12 border border-dashed border-gray-300 rounded-lg bg-white">
-        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-          </path>
+    <!-- Badge de date d'abonnement -->
+    <?php 
+      $postulationDate = new DateTime($asso['postulation_date']);
+      $formattedDate = $postulationDate->format('d M Y');
+    ?>
+    <div class="absolute bottom-3 left-3">
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-90 text-gray-800">
+        <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-purple-400" fill="currentColor" viewBox="0 0 8 8">
+          <circle cx="4" cy="4" r="3" />
         </svg>
-        <h3 class="text-lg font-medium text-gray-600">Vous n'êtes pas encore engagé dans une association</h3>
-        <p class="text-gray-500 mt-2 mb-6">Rejoignez une association pour commencer votre parcours bénévole</p>
-        <a href="associations.php" class="gradient-btn py-2 px-6">
-          Découvrir les associations
+        Depuis le <?php echo $formattedDate; ?>
+      </span>
+    </div>
+  </div>
+  
+  <div class="p-4">
+    <div class="flex justify-between items-start mb-3">
+      <h3 class="text-lg font-semibold text-gray-800">
+        <?php echo htmlspecialchars($asso['association_name']); ?>
+      </h3>
+      
+      <!-- Bouton pour se désabonner -->
+      <button class="unfollow-btn text-sm text-gray-500 hover:text-red-500 transition-colors flex items-center" 
+              data-association-id="<?php echo $asso['association_id']; ?>">
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        Ne plus suivre
+      </button>
+    </div>
+    
+    <!-- Adresse de l'association -->
+    <?php if(isset($asso['association_adress']) && !empty($asso['association_adress'])): 
+      $address = json_decode($asso['association_adress'], true);
+    ?>
+    <div class="flex items-center text-sm text-gray-500 mb-3">
+      <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+      </svg>
+      <?php echo isset($address['name']) ? htmlspecialchars($address['name']) : 'Adresse non spécifiée'; ?>
+    </div>
+    <?php endif; ?>
+    
+    <!-- Description -->
+    <div class="bg-gray-50 p-3 rounded-lg mb-3">
+      <p class="text-gray-600 text-sm line-clamp-2"><?php echo htmlspecialchars($asso['association_desc']); ?></p>
+    </div>
+    
+    <!-- Mission -->
+    <div class="bg-gray-50 p-3 rounded-lg mb-4">
+      <h4 class="text-sm font-medium text-gray-700 mb-1">Mission</h4>
+      <p class="text-gray-600 text-sm line-clamp-2"><?php echo htmlspecialchars($asso['association_mission']); ?></p>
+    </div>
+    
+    <!-- Boutons d'action -->
+    <div class="flex justify-between items-center pt-2 mt-2 border-t border-gray-100">
+      <div class="flex space-x-2">
+        <?php if(!empty($asso['association_mail'])): ?>
+        <a href="mailto:<?php echo htmlspecialchars($asso['association_mail']); ?>" 
+           class="text-gray-500 hover:text-blue-600 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
         </a>
+        <?php endif; ?>
       </div>
-      <?php
-    }
-    $stmt->close();
-  } catch (Exception $e) {
-    echo '<div class="p-4 bg-red-50 text-red-700 rounded-lg">Erreur: ' . htmlspecialchars($e->getMessage()) . '</div>';
-  }
-  ?>
+      
+      <form id="viewForm_<?php echo $asso['association_id']; ?>" method="post" action="set_session.php" class="inline-block">
+        <input type="hidden" name="association_id" value="<?php echo $asso['association_id']; ?>">
+<a href="association.php?id=<?php echo $asso['association_id']; ?>" 
+   class="gradient-btn py-1 px-4 text-sm">Voir détails</a>
+      </form>
+    </div>
+  </div>
 </div>
-
+            <?php
+          }
+        } else {
+          ?>
+          <div class="text-center py-12 border border-dashed border-gray-300 rounded-lg bg-white">
+            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+              </path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-600">Vous n'êtes pas encore engagé dans une association</h3>
+            <p class="text-gray-500 mt-2 mb-6">Rejoignez une association pour commencer votre parcours bénévole</p>
+            <a href="index.php" class="gradient-btn py-2 px-6">
+              Découvrir les associations
+            </a>
+          </div>
+          <?php
+        }
+        $stmt->close();
+      } catch (Exception $e) {
+        echo '<div class="p-4 bg-red-50 text-red-700 rounded-lg">Erreur: ' . htmlspecialchars($e->getMessage()) . '</div>';
+      }
+      ?>
+    </div>
+  </div>
+<?php
+// Ajouter cette section de popup de confirmation pour le désabonnement après la boucle des associations
+?>
+<div id="unfollowModal" class="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full mx-4">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Confirmer le désabonnement</h3>
+    <p class="text-gray-600 mb-6">Voulez-vous vraiment vous désabonner de cette association ? Vous ne recevrez plus de notifications concernant ses activités et missions.</p>
+    <div class="flex justify-end space-x-3">
+      <button id="cancelUnfollow" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+        Annuler
+      </button>
+      <button id="confirmUnfollow" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+        Confirmer
+      </button>
+    </div>
+    <input type="hidden" id="unfollowAssociationId" value="">
+  </div>
+</div>
   <!-- Section des missions -->
 <div class="bg-white rounded-xl shadow-custom p-6">
   <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes missions</h2>
@@ -1120,10 +1213,26 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
       10 => "Bénévole Mythique"
   ];
 
-  // Calculer le pourcentage pour la barre de progression
-  $prev_level_xp = 0; // XP minimale du niveau actuel
+  // Seuils de niveaux
+  $levels = [
+      1 => 0,
+      2 => 100,
+      3 => 250,
+      4 => 500,
+      5 => 1000,
+      6 => 2000,
+      7 => 3500,
+      8 => 5000,
+      9 => 7500,
+      10 => 10000
+  ];
+
+  $current_level = $xp_data['current_level'];
+  $prev_level_xp = $levels[$current_level]; // XP minimale du niveau actuel
   $next_level_xp = $xp_data['points_to_next_level']; // XP minimale du niveau suivant
-  $current_level_progress = ($xp_data['total_points'] - $prev_level_xp) / ($next_level_xp - $prev_level_xp) * 100;
+
+  // Calculer le pourcentage de progression entre niveau actuel et suivant
+  $current_level_progress = (($xp_data['total_points'] - $prev_level_xp) / ($next_level_xp - $prev_level_xp)) * 100;
   $current_level_progress = min(100, max(0, $current_level_progress)); // Limiter entre 0 et 100%
 
   $level_name = isset($level_names[$xp_data['current_level']]) ? $level_names[$xp_data['current_level']] : "Niveau " . $xp_data['current_level'];
@@ -1349,13 +1458,131 @@ $userTags = isset($_SESSION['user_tags']) ? $_SESSION['user_tags'] : '{}';
   }
 </style>
 
-        <div id="messagesTab" class="tab-content hidden">
-          <!-- Contenu pour la messagerie -->
+<div id="messagesTab" class="tab-content hidden">
+  <div class="bg-white rounded-xl shadow-custom p-6">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Messagerie</h2>
+    
+    <div class="text-center py-12">
+      <div class="relative mx-auto w-64 h-64 mb-8">
+        <!-- Animation d'enveloppe pulsante -->
+        <div class="absolute inset-0 bg-purple-100 rounded-full animate-pulse-slow opacity-50"></div>
+        
+        <!-- Icône d'enveloppe -->
+        <div class="absolute inset-0 flex items-center justify-center">
+          <svg class="w-24 h-24 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
         </div>
+      </div>
+      
+      <h3 class="text-xl font-semibold text-gray-700 mb-3">Système de messagerie en développement</h3>
+      <p class="text-gray-500 max-w-md mx-auto mb-8">Notre équipe travaille actuellement sur un système de messagerie performant pour vous permettre de communiquer directement avec les associations et les autres bénévoles. Cette fonctionnalité sera bientôt disponible !</p>
+      
+      <!-- Fausse barre de progression -->
+      <div class="max-w-md mx-auto mb-6">
+        <div class="bg-gray-100 rounded-full h-4 overflow-hidden">
+          <div class="bg-gradient-to-r from-purple-300 to-pink-300 h-full rounded-full" style="width: 75%"></div>
+        </div>
+        <p class="text-sm text-gray-500 mt-2">Progression: 75%</p>
+      </div>
+      
+      <!-- Fonctionnalités à venir -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto mt-10">
+        <div class="bg-purple-50 rounded-lg p-4 border border-purple-100 flex flex-col items-center">
+          <div class="rounded-full bg-purple-100 p-3 mb-3">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path>
+            </svg>
+          </div>
+          <h4 class="font-medium text-gray-700">Messages privés</h4>
+        </div>
+        
+        <div class="bg-pink-50 rounded-lg p-4 border border-pink-100 flex flex-col items-center">
+          <div class="rounded-full bg-pink-100 p-3 mb-3">
+            <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+          </div>
+          <h4 class="font-medium text-gray-700">Discussions de groupe</h4>
+        </div>
+        
+        <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-100 flex flex-col items-center">
+          <div class="rounded-full bg-indigo-100 p-3 mb-3">
+            <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+            </svg>
+          </div>
+          <h4 class="font-medium text-gray-700">Notifications</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-        <div id="settingsTab" class="tab-content hidden">
-          <!-- Contenu pour les paramètres -->
+<div id="settingsTab" class="tab-content hidden">
+  <div class="bg-white rounded-xl shadow-custom p-6">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Paramètres</h2>
+    
+    <div class="text-center py-12">
+      <div class="relative mx-auto w-64 h-64 mb-8">
+        <!-- Animation d'engrenage rotatif -->
+        <svg class="animate-spin-slow absolute inset-0" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#e2e8f0" stroke-width="8" />
+          <path d="M50 5 A 45 45 0 0 1 95 50" fill="none" stroke="#ffd6e2" stroke-width="8" stroke-linecap="round" />
+        </svg>
+        
+        <!-- Icône d'engrenage -->
+        <div class="absolute inset-0 flex items-center justify-center">
+          <svg class="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
         </div>
+      </div>
+      
+      <h3 class="text-xl font-semibold text-gray-700 mb-3">Paramètres en cours de développement</h3>
+      <p class="text-gray-500 max-w-md mx-auto mb-8">Nous travaillons actuellement sur une interface de paramètres complète pour vous permettre de personnaliser votre expérience sur HeartHive. Revenez bientôt pour découvrir ces nouvelles fonctionnalités !</p>
+      
+      <!-- Fausse barre de progression -->
+      <div class="max-w-md mx-auto mb-6">
+        <div class="bg-gray-100 rounded-full h-4 overflow-hidden">
+          <div class="bg-gradient-to-r from-pink-300 to-red-300 h-full rounded-full" style="width: 60%"></div>
+        </div>
+        <p class="text-sm text-gray-500 mt-2">Progression: 60%</p>
+      </div>
+      
+      <!-- Paramètres à venir -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto mt-10">
+        <div class="bg-pink-50 rounded-lg p-4 border border-pink-100 flex flex-col items-center">
+          <div class="rounded-full bg-pink-100 p-3 mb-3">
+            <svg class="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+          </div>
+          <h4 class="font-medium text-gray-700">Confidentialité</h4>
+        </div>
+        
+        <div class="bg-blue-50 rounded-lg p-4 border border-blue-100 flex flex-col items-center">
+          <div class="rounded-full bg-blue-100 p-3 mb-3">
+            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+            </svg>
+          </div>
+          <h4 class="font-medium text-gray-700">Notifications</h4>
+        </div>
+        
+        <div class="bg-purple-50 rounded-lg p-4 border border-purple-100 flex flex-col items-center">
+          <div class="rounded-full bg-purple-100 p-3 mb-3">
+            <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+            </svg>
+          </div>
+          <h4 class="font-medium text-gray-700">Langue</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
     </div>
   </div>
 
@@ -1971,7 +2198,7 @@ function showXPNotification(points, reason) {
   }, 4000);
 }
   </script>
-<!--Unfollow script-->
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Éléments pour la modal de désabonnement

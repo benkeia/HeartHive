@@ -88,48 +88,61 @@
         border-bottom: 2px solid #4a6cf7;
     }
 
-    .xp-notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #4a6cf7, #6a88ff);
-        color: white;
-        padding: 12px 16px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        transform: translateX(120%);
-        transition: transform 0.3s ease;
-        z-index: 1000;
-        box-shadow: 0 4px 12px rgba(74, 108, 247, 0.2);
-    }
+   /* Remplacez le style existant de la notification XP (vers la ligne 107) par ceci : */
+.xp-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #4a6cf7, #6a88ff);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(74, 108, 247, 0.2);
+    max-width: 300px; /* Ajout de cette ligne pour limiter la largeur */
+    width: auto; /* Ajout de cette ligne pour s'assurer que la popup prend la largeur de son contenu */
+}
 
-    .xp-notification.show {
-        transform: translateX(0);
-    }
+.xp-notification.show {
+    transform: translateX(0);
+}
 
-    .xp-notification .icon {
-        background: rgba(255, 255, 255, 0.2);
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 12px;
-        font-weight: bold;
-        font-size: 18px;
-    }
+.xp-notification .icon {
+    background: rgba(255, 255, 255, 0.2);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-weight: bold;
+    font-size: 18px;
+    flex-shrink: 0; /* Ajout de cette ligne pour éviter que l'icône ne se rétrécisse */
+}
 
-    .xp-notification .points {
-        font-weight: bold;
-        font-size: 16px;
-    }
+.xp-notification .content {
+    flex: 1; /* Ajout de cette ligne pour que le contenu prenne l'espace disponible */
+    overflow: hidden; /* Empêcher le débordement du texte */
+}
 
-    .xp-notification .reason {
-        font-size: 12px;
-        opacity: 0.9;
-    }
+.xp-notification .points {
+    font-weight: bold;
+    font-size: 16px;
+    white-space: nowrap; /* Éviter que le texte se brise sur plusieurs lignes */
+}
+
+.xp-notification .reason {
+    font-size: 12px;
+    opacity: 0.9;
+    white-space: nowrap; /* Éviter que le texte se brise sur plusieurs lignes */
+    text-overflow: ellipsis; /* Ajouter des points de suspension si le texte déborde */
+    overflow: hidden; /* Cacher le texte qui déborde */
+}
 </style>
 
 <body class="bg-gray-50">
@@ -537,7 +550,7 @@
 
                             // Si XP ajouté, afficher la notification
                             if (data.xp_added && data.xp_points > 0) {
-                                showXPNotification(data.xp_points, data.action === 'follow' ? "Association suivie!" : "Désabonnement effectué");
+                                showXPNotification(data.xp_points, data.action === 'follow' ? "Association suivie!" : "Points attribués !");
                             }
                         } else {
                             // Afficher l'erreur dans la popup
@@ -597,28 +610,58 @@
         }
 
         // Fonction pour afficher la notification XP
-        function showXPNotification(points, message) {
-            const notification = document.createElement('div');
-            notification.className = 'xp-notification';
-            notification.innerHTML = `
-                <div class="icon">+</div>
-                <div class="content">
-                    <div class="points">+${points} XP</div>
-                    <div class="reason">${message}</div>
-                </div>
-            `;
-
-            document.body.appendChild(notification);
-
-            // Animation d'affichage
-            setTimeout(() => notification.classList.add('show'), 10);
-
-            // Suppression après 3 secondes
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
+        // Remplacez la fonction showXPNotification à la fin du fichier par celle-ci:
+function showXPNotification(points, message) {
+    // Supprimer toute notification existante
+    const existingNotifications = document.querySelectorAll('.xp-notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    // Créer la nouvelle notification
+    const notification = document.createElement('div');
+    
+    // Appliquer directement les styles pour centrer la notification
+    notification.style.position = 'fixed';
+    notification.style.top = '50%';
+    notification.style.left = '50%';
+    notification.style.transform = 'translate(-50%, -50%)';
+    notification.style.background = 'linear-gradient(135deg, #4a6cf7, #6a88ff)';
+    notification.style.color = 'white';
+    notification.style.padding = '16px 20px';
+    notification.style.borderRadius = '10px';
+    notification.style.display = 'flex';
+    notification.style.alignItems = 'center';
+    notification.style.zIndex = '9999';
+    notification.style.boxShadow = '0 8px 20px rgba(74, 108, 247, 0.3)';
+    notification.style.maxWidth = '320px';
+    notification.style.width = 'auto';
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.5s ease';
+    
+    notification.innerHTML = `
+        <div style="background: rgba(255, 255, 255, 0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 16px; font-weight: bold; font-size: 20px; flex-shrink: 0;">+</div>
+        <div style="flex: 1; overflow: hidden;">
+            <div style="font-weight: bold; font-size: 18px; margin-bottom: 4px;">+${points} XP</div>
+            <div style="font-size: 14px; opacity: 0.9;">${message}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animation d'affichage
+    setTimeout(() => {
+        notification.style.opacity = '1';
+    }, 10);
+    
+    // Disparition après 3 secondes
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        
+        // Suppression après la fin de l'animation
+        setTimeout(() => {
+            notification.remove();
+        }, 500);
+    }, 3000);
+}
     </script>
 </body>
 
