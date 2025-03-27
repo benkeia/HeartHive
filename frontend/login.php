@@ -67,7 +67,7 @@ try {
             $_SESSION['user_bio'] = $row['association_desc'] ?? '';
             $_SESSION['user_tags'] = '{}';
 
-            sendResponse(true, 'Connexion réussie', 'profile_asso.php');
+            sendResponse(true, 'Connexion réussie', 'index_asso.php');
         }
         sendResponse(false, 'Mot de passe incorrect');
     }
