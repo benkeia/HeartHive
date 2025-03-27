@@ -19,6 +19,6 @@ $result = $stmt->get_result();
 $row = $result->fetch_assoc();
 
 echo json_encode([
-    'success' => true, 
+    'success' => true,
     'unread_count' => $row['unread_count']
 ]);
