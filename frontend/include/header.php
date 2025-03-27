@@ -47,7 +47,32 @@ include '../backend/db.php';
             transform: translateY(0);
             opacity: 1;
         }
-
+ /* Styles pour la barre de défilement personnalisée */
+ .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #ccc;
+  }
+  
+  /* Style pour limiter le texte à 2 lignes */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
         /* Ajouter les autres styles ici */
     </style>
 </head>
@@ -217,87 +242,195 @@ include '../backend/db.php';
 </header>
 <div class="h-[50px]"></div>
 
-<div id="searchPopup" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center hidden z-50">
-    <div class="bg-white rounded-lg p-6 w-[90%] md:w-[600px]">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold">Résultats de recherche</h2>
-            <button id="closePopup" class="text-gray-500 hover:text-gray-700">&times;</button>
-        </div>
-        <div id="associationList" class="space-y-4">
-            <!-- Les résultats de recherche seront affichés ici -->
-        </div>
+<!-- Pop-up de recherche améliorée -->
+<div id="searchPopup" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex justify-center items-center hidden z-50 transition-all duration-300">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 w-[90%] md:w-[650px] max-h-[80vh] transform transition-all duration-300 scale-95 opacity-0" id="searchPopupContent">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-pink-500">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+        </svg>
+        Résultats de recherche
+      </h2>
+      <button id="closePopup" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
+    
+    <!-- Barre de recherche intégrée -->
+    <div class="relative mb-6">
+      <input type="text" id="popupSearchInput" class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-pink-400 outline-none transition-all shadow-sm" placeholder="Affinez votre recherche..." />
+      <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+      </svg>
+    </div>
+    
+    <!-- Filtres rapides -->
+    <div class="flex flex-wrap gap-2 mb-6">
+      <span class="text-sm text-gray-500 self-center mr-1">Filtres :</span>
+      <button class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 hover:bg-pink-100 text-gray-700 hover:text-pink-700 transition-colors">Associations</button>
+      <button class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 hover:bg-pink-100 text-gray-700 hover:text-pink-700 transition-colors">Missions</button>
+      <button class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 hover:bg-pink-100 text-gray-700 hover:text-pink-700 transition-colors">Populaires</button>
+      <button class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 hover:bg-pink-100 text-gray-700 hover:text-pink-700 transition-colors">Près de moi</button>
+    </div>
+    
+    <div class="overflow-y-auto max-h-[50vh] pr-1 custom-scrollbar">
+      <div id="associationList" class="space-y-3">
+        <!-- Les résultats de recherche seront affichés ici -->
+        <div class="text-center py-16 text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mx-auto text-gray-300 mb-3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+          <p class="text-lg font-medium">Commencez à taper pour rechercher</p>
+          <p class="text-sm mt-1">Trouvez des associations et des missions qui vous correspondent</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
+      <p class="text-sm text-gray-500"><span id="resultCount">0</span> résultats trouvés</p>
+      <a href="#" class="text-sm font-medium text-pink-600 hover:text-pink-800 transition-colors">Voir tous les résultats</a>
+    </div>
+  </div>
 </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const searchInput = document.getElementById("searchInput");
-        const searchPopup = document.getElementById("searchPopup");
-        const closePopup = document.getElementById("closePopup");
-        const associationList = document.getElementById("associationList");
+    const searchInput = document.getElementById("searchInput");
+    const popupSearchInput = document.getElementById("popupSearchInput");
+    const searchPopup = document.getElementById("searchPopup");
+    const searchPopupContent = document.getElementById("searchPopupContent");
+    const closePopup = document.getElementById("closePopup");
+    const associationList = document.getElementById("associationList");
+    const resultCount = document.getElementById("resultCount");
 
-        let searchTimeout;
+    let searchTimeout;
 
-        searchInput.addEventListener("input", function() {
-            clearTimeout(searchTimeout);
-            const query = searchInput.value;
-
-            searchTimeout = setTimeout(() => {
-                if (query.length >= 3) {
-                    fetch(`search_associations.php?q=${encodeURIComponent(query)}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (Array.isArray(data) && data.length > 0) {
-                                associationList.innerHTML = "";
-                                data.forEach(association => {
-                                    const div = document.createElement('div');
-                                    div.classList.add('association-item', 'border-b', 'pb-2', 'mb-2');
-                                    div.innerHTML = `
-                                        <div class="association-card bg-gray-100 p-4 hover:bg-gray-200 cursor-pointer rounded">
-                                            <h3 class="text-lg font-semibold">${association.association_name}</h3>
-                                            <p class="text-sm text-gray-600">${association.association_desc}</p>
-                                            <p class="text-sm mt-2">Mission: ${association.association_mission}</p>
-                                        </div>
-                                    `;
-
-                                    div.addEventListener('click', () => {
-                                        // MODIFICATION : Redirection directe avec paramètre GET
-                                        window.location.href = "association.php?id=" + association.association_id;
-                                    });
-
-                                    associationList.appendChild(div);
-                                });
-                                searchPopup.classList.remove('hidden');
-                            } else {
-                                associationList.innerHTML = "<p class='text-center py-4'>Aucune association trouvée.</p>";
-                                searchPopup.classList.remove('hidden');
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Erreur:", error);
-                        });
-                } else {
-                    searchPopup.classList.add('hidden');
-                }
-            }, 300); // Délai de 300ms pour éviter trop de requêtes
-        });
-
-        closePopup.addEventListener("click", function() {
-            searchPopup.classList.add('hidden');
-        });
-
-        // Fermer avec Echap
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                searchPopup.classList.add('hidden');
-            }
-        });
-
-        // Fermer en cliquant en dehors
-        searchPopup.addEventListener('click', function(e) {
-            if (e.target === searchPopup) {
-                searchPopup.classList.add('hidden');
-            }
-        });
+    // Synchroniser les deux champs de recherche
+    searchInput.addEventListener("input", function() {
+      if (popupSearchInput) {
+        popupSearchInput.value = searchInput.value;
+      }
+      handleSearch(searchInput.value);
     });
+
+    if (popupSearchInput) {
+      popupSearchInput.addEventListener("input", function() {
+        searchInput.value = popupSearchInput.value;
+        handleSearch(popupSearchInput.value);
+      });
+    }
+
+    function handleSearch(query) {
+      clearTimeout(searchTimeout);
+
+      searchTimeout = setTimeout(() => {
+        if (query.length >= 2) {
+          fetch(`search_associations.php?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+              if (Array.isArray(data) && data.length > 0) {
+                associationList.innerHTML = "";
+                resultCount.textContent = data.length;
+                
+                data.forEach(association => {
+                  const div = document.createElement('div');
+                  div.classList.add('association-item', 'hover:scale-[1.02]', 'transition-transform', 'duration-200');
+                  
+                  // Créer une description courte
+                  const shortDesc = association.association_desc ? 
+                    association.association_desc.length > 100 ? 
+                    association.association_desc.substring(0, 100) + '...' : 
+                    association.association_desc : 
+                    'Aucune description disponible';
+                  
+                  // Image par défaut si l'association n'en a pas
+                  const logo = association.association_logo || 'assets/uploads/profile_pictures/default.webp';
+                  
+                  div.innerHTML = `
+                    <div class="association-card bg-white p-4 hover:bg-gray-50 cursor-pointer rounded-xl border border-gray-200 shadow-sm flex gap-4">
+                      <img src="${logo}" alt="${association.association_name}" class="w-16 h-16 rounded-lg object-cover flex-shrink-0">
+                      <div class="flex-grow">
+                        <h3 class="text-lg font-semibold text-gray-800">${association.association_name}</h3>
+                        <p class="text-sm text-gray-600 line-clamp-2 mb-2">${shortDesc}</p>
+                        <div class="flex flex-wrap gap-1">
+                          <span class="text-xs bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full">${association.mission_count || 0} mission(s)</span>
+                          <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Association</span>
+                        </div>
+                      </div>
+                      <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                      </div>
+                    </div>
+                  `;
+
+                  div.addEventListener('click', () => {
+                    window.location.href = "association.php?id=" + association.association_id;
+                  });
+
+                  associationList.appendChild(div);
+                });
+                
+                openSearchPopup();
+              } else {
+                associationList.innerHTML = `
+                  <div class="text-center py-12 px-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mx-auto text-gray-300 mb-3">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.182 16.318A4.486 4.486 0 0012.016 15a4.486 4.486 0 00-3.198 1.318M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
+                    </svg>
+                    <p class="text-lg font-medium text-gray-700">Aucune association trouvée</p>
+                    <p class="text-sm text-gray-500 mt-1">Essayez d'autres termes de recherche</p>
+                  </div>
+                `;
+                resultCount.textContent = "0";
+                openSearchPopup();
+              }
+            })
+            .catch(error => {
+              console.error("Erreur:", error);
+            });
+        }
+      }, 300); // Délai de 300ms pour éviter trop de requêtes
+    }
+
+    function openSearchPopup() {
+      searchPopup.classList.remove('hidden');
+      // Animation d'entrée
+      setTimeout(() => {
+        searchPopupContent.classList.remove('scale-95', 'opacity-0');
+        searchPopupContent.classList.add('scale-100', 'opacity-100');
+      }, 10);
+    }
+
+    function closeSearchPopup() {
+      // Animation de sortie
+      searchPopupContent.classList.remove('scale-100', 'opacity-100');
+      searchPopupContent.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        searchPopup.classList.add('hidden');
+      }, 300);
+    }
+
+    closePopup.addEventListener("click", function() {
+      closeSearchPopup();
+    });
+
+    // Fermer avec Echap
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeSearchPopup();
+      }
+    });
+
+    // Fermer en cliquant en dehors
+    searchPopup.addEventListener('click', function(e) {
+      if (e.target === searchPopup) {
+        closeSearchPopup();
+      }
+    });
+  });
 </script>
