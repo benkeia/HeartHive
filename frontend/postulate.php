@@ -19,13 +19,12 @@ if (isset($_POST['association_id']) && isset($_SESSION['user_id'])) {
     if ($check_result->num_rows > 0) {
         echo json_encode(["status" => "error", "message" => "Vous avez déjà postulé. ❌"]);
     } else {
-        // Insérer la nouvelle postulation
         $query = "INSERT INTO postulation (postulation_association_id_fk, postulation_user_id_fk, postulation_date) VALUES (?, ?, ?)";
         $stmt = $conn->prepare($query);
         $stmt->bind_param("iis", $association_id, $user_id, $date);
 
         if ($stmt->execute()) {
-            // NOUVEAU CODE : Ajouter directement les points XP ici
+
             $xp_added = false;
             $xp_points = 25; // Valeur pour apply_association
             $action = 'apply_association';

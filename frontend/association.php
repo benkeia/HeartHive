@@ -88,7 +88,6 @@
         border-bottom: 2px solid #4a6cf7;
     }
 
-   /* Remplacez le style existant de la notification XP (vers la ligne 107) par ceci : */
 .xp-notification {
     position: fixed;
     top: 20px;
@@ -103,8 +102,8 @@
     transition: transform 0.3s ease;
     z-index: 1000;
     box-shadow: 0 4px 12px rgba(74, 108, 247, 0.2);
-    max-width: 300px; /* Ajout de cette ligne pour limiter la largeur */
-    width: auto; /* Ajout de cette ligne pour s'assurer que la popup prend la largeur de son contenu */
+    max-width: 300px; 
+    width: auto; 
 }
 
 .xp-notification.show {
@@ -122,24 +121,24 @@
     margin-right: 12px;
     font-weight: bold;
     font-size: 18px;
-    flex-shrink: 0; /* Ajout de cette ligne pour éviter que l'icône ne se rétrécisse */
+    flex-shrink: 0; 
 }
 
 .xp-notification .content {
-    flex: 1; /* Ajout de cette ligne pour que le contenu prenne l'espace disponible */
-    overflow: hidden; /* Empêcher le débordement du texte */
+    flex: 1; 
+    overflow: hidden; 
 }
 
 .xp-notification .points {
     font-weight: bold;
     font-size: 16px;
-    white-space: nowrap; /* Éviter que le texte se brise sur plusieurs lignes */
+    white-space: nowrap; 
 }
 
 .xp-notification .reason {
     font-size: 12px;
     opacity: 0.9;
-    white-space: nowrap; /* Éviter que le texte se brise sur plusieurs lignes */
+    white-space: nowrap; 
     text-overflow: ellipsis; /* Ajouter des points de suspension si le texte déborde */
     overflow: hidden; /* Cacher le texte qui déborde */
 }

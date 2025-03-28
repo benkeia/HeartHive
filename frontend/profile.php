@@ -885,7 +885,8 @@ if (isset($level_update['updated']) && $level_update['updated']) {
     </div>
   </div>
 <?php
-// Ajouter cette section de popup de confirmation pour le désabonnement après la boucle des associations
+
+
 ?>
 <div id="unfollowModal" class="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center hidden z-50">
   <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full mx-4">
@@ -2075,7 +2076,6 @@ if (isset($level_update['updated']) && $level_update['updated']) {
 
 
 
-    // Ajouter cette fonction dans la section <script> (vers la ligne 1080)
 function checkProfileCompleteness(formData) {
   // Vérifier si tous les champs sont remplis
   const hasBio = document.getElementById('bio').value.trim().length > 10;
