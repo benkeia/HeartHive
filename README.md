@@ -45,7 +45,7 @@ Installez la base de donnée fournie dans le dossier BDD de HeartHive sur PHPMyA
 
 ### 3. Lancez le serveur local
 
-Accédez à `http://localhost:8000/HeartHive/Frontend/landing.php`
+Accédez à `http://localhost:8000/HeartHive/frontend/landing.php`
 
 ## 💻 Utilisateurs de test
 
