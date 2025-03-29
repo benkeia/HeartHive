@@ -5,4 +5,4 @@ session_unset();
 
 session_destroy();
 
-header('Location:loginPage.php');
+header('Location:landing.php');
