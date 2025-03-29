@@ -41,7 +41,7 @@ cd HeartHive
 
 ### 2. Configurez l'environnement
 
-Installez la base de donnée fournie dans le dossier BDD de HeartHive sur PHPMyAdmin
+Installez la base de donnée 'bddsae401' fournie dans le dossier BDD de HeartHive sur PHPMyAdmin
 
 ### 3. Lancez le serveur local
 
