@@ -56,8 +56,8 @@ Accédez à `http://localhost:8000/HeartHive/Frontend/landing.php`
 
 - **Bénévole** :
 
-- Mail : baptiste.saegaert@outlook.com
-- Mot de passe : 12345678
+  - Mail : baptiste.saegaert@outlook.com
+  - Mot de passe : 12345678
 
 ## 🌟 Crédits
 
