@@ -4,6 +4,10 @@
 
 HeartHive est une plateforme web qui facilite la mise en relation entre les bénévoles et les associations. Notre objectif est de rendre le bénévolat plus accessible, efficace et gratifiant pour les étudiants en proposant un système intelligent de jumelage entre les compétences des bénévoles et les besoins des organisations.
 
+## 🌐 Lien du projet hébergé
+
+https://saegabap.tpweb.univ-rouen.fr/HeartHive/frontend/landing.php
+
 ## 🎯 Fonctionnalités Principales
 
 - **Système de profil** : Gestion des profils bénévoles et associations.
