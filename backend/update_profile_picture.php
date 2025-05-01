@@ -49,7 +49,7 @@ if (isset($_POST['cropped_image']) && !empty($_POST['cropped_image'])) {
     
     // Définir les chemins absolus et relatifs
     $upload_rel_dir = 'assets/uploads/profile_pictures/';
-    $root_path = $_SERVER['DOCUMENT_ROOT'] . '/HeartHive/HeartHive/frontend/';
+    $root_path = $_SERVER['DOCUMENT_ROOT'] . '/HeartHive/frontend/';
     $upload_abs_dir = $root_path . $upload_rel_dir;
     
     // Créer le dossier s'il n'existe pas
@@ -111,7 +111,7 @@ if (isset($_POST['cropped_image']) && !empty($_POST['cropped_image'])) {
 else if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
     // Définir les chemins comme ci-dessus
     $upload_rel_dir = 'assets/uploads/profile_pictures/';
-    $root_path = $_SERVER['DOCUMENT_ROOT'] . '/HeartHive/HeartHive/frontend/';
+    $root_path = $_SERVER['DOCUMENT_ROOT'] . '/HeartHive/frontend/';
     $upload_abs_dir = $root_path . $upload_rel_dir;
     
     // Créer le dossier s'il n'existe pas

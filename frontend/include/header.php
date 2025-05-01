@@ -3,16 +3,16 @@
 session_start();
 
 include '../backend/db.php';
+
+// Vérifier si l'utilisateur est connecté
+$isLoggedIn = isset($_SESSION['user_id']);
 ?>
 
-
-
 <head>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            <?php if ($_SESSION['type'] == 1): ?>
+            <?php if (isset($_SESSION['type']) && $_SESSION['type'] == 1): ?>
                 document.querySelector('header').classList.remove('bg-custom-pink');
                 document.querySelector('header').style.backgroundColor = '#FB8E00';
             <?php endif; ?>
@@ -47,75 +47,37 @@ include '../backend/db.php';
             transform: translateY(0);
             opacity: 1;
         }
- /* Styles pour la barre de défilement personnalisée */
- .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-  }
-  
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #ddd;
-    border-radius: 10px;
-  }
-  
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #ccc;
-  }
-  
-  /* Style pour limiter le texte à 2 lignes */
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+        /* Styles pour la barre de défilement personnalisée */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #ccc;
+        }
+        
+        /* Style pour limiter le texte à 2 lignes */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
         /* Ajouter les autres styles ici */
     </style>
 </head>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const popover = document.getElementById('popover');
-        let timeout;
 
-        document.querySelector('.group').addEventListener('mouseenter', function() {
-            clearTimeout(timeout);
-            popover.classList.remove('hidden');
-            popover.classList.add('opacity-100');
-        });
-
-        document.querySelector('.group').addEventListener('mouseleave', function() {
-            timeout = setTimeout(function() {
-                popover.classList.add('hidden');
-                popover.classList.remove('opacity-100');
-            }, 100);
-        });
-    });
-</script>
-
-<head>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            <?php if ($_SESSION['type'] == 1): ?>
-                document.querySelector('header').classList.remove('bg-custom-pink');
-                document.querySelector('header').style.backgroundColor = '#FB8E00';
-            <?php endif; ?>
-        });
-    </script>
-    <style>
-        @layer utilities {
-            .bg-custom-pink {
-                background-color: #ffb3e4;
-            }
-        }
-    </style>
-</head>
-
+<!-- Reste du code identique -->
 
 <header class="bg-custom-pink shadow-md p-4 flex items-center justify-between absolute top-0 left-0 w-full z-10">
     <!-- Logo -->
@@ -139,6 +101,7 @@ include '../backend/db.php';
 
     <!-- Icônes à droite -->
     <div class="flex items-center space-x-6">
+        <?php if ($isLoggedIn): ?>
         <!-- Icône de notification -->
         <button class="relative">
             <svg class="w-8 h-8 text-gray-600 hover:text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -148,10 +111,10 @@ include '../backend/db.php';
             </svg>
         </button>
 
-        <!-- Photo de profil avec popover -->
+        <!-- Photo de profil avec popover pour utilisateur connecté -->
         <div class="relative group">
             <a href="#" class="block">
-                <img src="<?php echo $_SESSION['user_profile_picture'] ?>" alt="Profil"
+                <img src="<?php echo $_SESSION['user_profile_picture'] ?? 'assets/uploads/profile_pictures/default.webp'; ?>" alt="Profil"
                     class="w-12 h-12 rounded-full border border-gray-300" />
             </a>
 
@@ -191,7 +154,7 @@ include '../backend/db.php';
                             Paramètres
                         </div>
                     </a>
-                    <?php if ($_SESSION['type'] != 1): ?>
+                    <?php if (isset($_SESSION['type']) && $_SESSION['type'] != 1): ?>
                         <a href="certifications.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             <div class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
@@ -217,30 +180,54 @@ include '../backend/db.php';
                 </div>
             </div>
         </div>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const popover = document.getElementById('popover');
-                let timeout;
-
-                document.querySelector('.group').addEventListener('mouseenter', function() {
-                    clearTimeout(timeout);
-                    popover.classList.remove('hidden');
-                    popover.classList.add('opacity-100');
-                });
-
-                document.querySelector('.group').addEventListener('mouseleave', function() {
-                    timeout = setTimeout(function() {
-                        popover.classList.add('hidden');
-                        popover.classList.remove('opacity-100');
-                    }, 100);
-                });
-            });
-        </script>
-    </div>
+        <?php else: ?>
+        <!-- Options pour utilisateur non connecté -->
+        <div class="flex items-center space-x-2">
+            <a href="loginPage.php" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+                Connexion
+            </a>
+            <a href="signup.php" class="px-4 py-2 text-sm font-medium text-white bg-pink-500 hover:bg-pink-600 rounded-lg transition-colors">
+                S'inscrire
+            </a>
+            
+            <!-- Affichage "Invité" -->
+            <div class="flex items-center ml-2 text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span class="text-sm font-medium">Invité</span>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 </header>
+
 <div class="h-[50px]"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if ($isLoggedIn): ?>
+        const popover = document.getElementById('popover');
+        let timeout;
+
+        document.querySelector('.group').addEventListener('mouseenter', function() {
+            clearTimeout(timeout);
+            popover.classList.remove('hidden');
+            popover.classList.add('opacity-100');
+        });
+
+        document.querySelector('.group').addEventListener('mouseleave', function() {
+            timeout = setTimeout(function() {
+                popover.classList.add('hidden');
+                popover.classList.remove('opacity-100');
+            }, 100);
+        });
+        <?php endif; ?>
+        
+        // Reste de votre JavaScript existant...
+    });
+</script>
 
 <!-- Pop-up de recherche améliorée -->
 <div id="searchPopup" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex justify-center items-center hidden z-50 transition-all duration-300">
